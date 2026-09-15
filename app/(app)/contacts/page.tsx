@@ -48,7 +48,9 @@ export default async function ContactsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Contacts</h1>
+        <h1 className="font-display text-3xl tracking-[0.06em] text-white uppercase md:text-4xl">
+          Contacts
+        </h1>
         <p className="text-sm text-muted-foreground">
           {contacts.length} contacto{contacts.length === 1 ? "" : "s"}
           {error ? ` · Error: ${error.message}` : ""}

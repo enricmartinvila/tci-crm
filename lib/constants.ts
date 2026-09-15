@@ -126,13 +126,13 @@ export const DEAL_CSV_DEFAULTS: Record<string, string> = {
 export function priorityBadgeClass(priority: string | null | undefined): string {
   switch (priority) {
     case "A+":
-      return "bg-amber-500 text-white hover:bg-amber-500";
+      return "bg-[#e11d2e] text-white hover:bg-[#e11d2e]";
     case "A":
-      return "bg-orange-500 text-white hover:bg-orange-500";
+      return "bg-[#f5c518] text-[#1a1200] hover:bg-[#f5c518]";
     case "B":
-      return "bg-sky-500 text-white hover:bg-sky-500";
+      return "bg-[#2b4a9b] text-white hover:bg-[#2b4a9b]";
     case "C":
-      return "bg-slate-400 text-white hover:bg-slate-400";
+      return "bg-[#3d4a6b] text-[#c8d0e6] hover:bg-[#3d4a6b]";
     default:
       return "bg-muted text-muted-foreground";
   }
@@ -141,18 +141,18 @@ export function priorityBadgeClass(priority: string | null | undefined): string 
 export function stageBadgeClass(stage: string | null | undefined): string {
   switch (stage) {
     case "Sponsor Won":
-      return "bg-emerald-600 text-white hover:bg-emerald-600";
+      return "bg-emerald-500 text-white hover:bg-emerald-500";
     case "Lost":
     case "Not Now":
-      return "bg-slate-500 text-white hover:bg-slate-500";
+      return "bg-[#3d4a6b] text-[#c8d0e6] hover:bg-[#3d4a6b]";
     case "Negotiating":
     case "Interested":
-      return "bg-violet-600 text-white hover:bg-violet-600";
+      return "bg-[#e11d2e] text-white hover:bg-[#e11d2e]";
     case "Contacted":
     case "Waiting Reply":
     case "Follow-up":
-      return "bg-blue-600 text-white hover:bg-blue-600";
+      return "bg-[#2b4a9b] text-white hover:bg-[#2b4a9b]";
     default:
-      return "bg-zinc-200 text-zinc-800 hover:bg-zinc-200";
+      return "bg-[#152047] text-[#c8d0e6] hover:bg-[#152047]";
   }
 }

@@ -105,7 +105,9 @@ export default async function FollowUpsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Follow-ups</h1>
+        <h1 className="font-display text-3xl tracking-[0.06em] text-white uppercase md:text-4xl">
+          Follow-ups
+        </h1>
         <p className="text-sm text-muted-foreground">
           {due.length} hoy/overdue · {upcoming.length} próximos
         </p>
