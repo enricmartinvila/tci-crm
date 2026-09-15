@@ -2,7 +2,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export function BrandMark({
-  size = 40,
+  size = 44,
   className,
 }: {
   size?: number;
@@ -32,14 +32,10 @@ export function BrandWordmark({
 }) {
   return (
     <div className={cn("flex items-center gap-3", className)}>
-      <BrandMark size={44} />
-      <div className="min-w-0 leading-tight">
-        <p className="font-display text-[15px] font-bold tracking-[0.08em] text-white uppercase">
-          The Cartel Insider
-        </p>
-        <p className="truncate text-xs font-medium tracking-wide text-[#9aa6c4]">
-          {subtitle}
-        </p>
+      <BrandMark size={48} />
+      <div className="min-w-0 leading-snug">
+        <p className="text-base font-bold text-white">The Cartel Insider</p>
+        <p className="truncate text-sm font-medium text-[#9aa6c4]">{subtitle}</p>
       </div>
     </div>
   );

@@ -47,17 +47,15 @@ export default function LoginPage() {
 
       <div className="tci-animate-in relative z-10 w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
-          <BrandMark size={88} className="mb-5" />
-          <h1 className="font-display text-4xl tracking-[0.12em] text-white uppercase sm:text-5xl">
+          <BrandMark size={96} className="mb-5" />
+          <h1 className="text-3xl font-extrabold text-white sm:text-4xl">
             The Cartel Insider
           </h1>
-          <p className="mt-2 text-sm tracking-[0.2em] text-[#9aa6c4] uppercase">
-            Sponsor CRM
-          </p>
+          <p className="mt-2 text-base text-[#9aa6c4]">Sponsor CRM</p>
         </div>
 
         <div className="tci-panel p-6 sm:p-8">
-          <p className="mb-5 text-sm text-[#9aa6c4]">
+          <p className="mb-5 text-base text-[#9aa6c4]">
             Acceso privado al pipeline de sponsors.
           </p>
           <form action={onSubmit} className="flex flex-col gap-4">
@@ -93,7 +91,7 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="mt-6 text-center text-xs text-[#6b7799]">
+        <p className="mt-6 text-center text-sm text-[#6b7799]">
           <a
             href="https://www.youtube.com/@TheCartelInsider"
             target="_blank"

@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, IBM_Plex_Sans, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const display = Bebas_Neue({
-  weight: "400",
-  variable: "--font-display",
-  subsets: ["latin"],
-});
-
-const sans = IBM_Plex_Sans({
-  weight: ["400", "500", "600", "700"],
+const sans = Plus_Jakarta_Sans({
+  weight: ["400", "500", "600", "700", "800"],
   variable: "--font-sans",
   subsets: ["latin"],
 });
@@ -40,9 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className="dark">
-      <body
-        className={`${display.variable} ${sans.variable} ${mono.variable} antialiased`}
-      >
+      <body className={`${sans.variable} ${mono.variable} antialiased`}>
         {children}
         <Toaster richColors position="top-right" theme="dark" />
       </body>

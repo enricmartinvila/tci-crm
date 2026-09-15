@@ -91,7 +91,9 @@ export default async function CompanyDetailPage({
               ← Companies
             </Link>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">{c.name}</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white">
+            {c.name}
+          </h1>
           <div className="flex flex-wrap items-center gap-2">
             <PriorityBadge priority={c.priority} />
             <StatusBadge status={c.status} />

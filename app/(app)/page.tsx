@@ -93,13 +93,13 @@ export default async function DashboardPage() {
           aria-hidden
           className="pointer-events-none absolute -right-10 -top-10 size-48 rounded-full bg-primary/20 blur-3xl"
         />
-        <p className="text-[11px] font-semibold tracking-[0.22em] text-[#9aa6c4] uppercase">
+        <p className="text-sm font-semibold text-[#9aa6c4]">
           The Cartel Insider
         </p>
-        <h1 className="font-display mt-1 text-4xl tracking-[0.08em] text-white uppercase md:text-5xl">
+        <h1 className="mt-1 text-3xl font-extrabold text-white md:text-4xl">
           Sponsor Desk
         </h1>
-        <p className="mt-2 max-w-xl text-sm text-[#9aa6c4]">
+        <p className="mt-2 max-w-xl text-base text-[#9aa6c4]">
           Pipeline de sponsors, follow-ups y deals activos.
         </p>
       </div>
@@ -109,12 +109,12 @@ export default async function DashboardPage() {
           <Link key={card.title} href={card.href} className="tci-animate-in">
             <Card className="tci-panel border-white/10 bg-card/70 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-red-950/20">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-base font-medium text-muted-foreground">
                   {card.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="font-display text-4xl tracking-wide text-white">
+                <p className="text-4xl font-extrabold tracking-tight text-white">
                   {card.value}
                 </p>
               </CardContent>

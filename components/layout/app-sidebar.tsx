@@ -43,15 +43,15 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={href}
             onClick={onNavigate}
             className={cn(
-              "group flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+              "group flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium transition-all",
               active
                 ? "bg-primary text-primary-foreground shadow-md shadow-red-950/40"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-white"
+                : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white"
             )}
           >
             <Icon
               className={cn(
-                "size-4 transition-transform group-hover:scale-105",
+                "size-5 transition-transform group-hover:scale-105",
                 active ? "text-white" : "text-[#9aa6c4]"
               )}
             />
@@ -79,11 +79,11 @@ export function AppSidebar({ email }: { email?: string | null }) {
       <div className="border-b border-sidebar-border px-4 py-5">
         <BrandWordmark />
         {email ? (
-          <p className="mt-3 truncate text-[11px] text-[#9aa6c4]">{email}</p>
+          <p className="mt-3 truncate text-sm text-[#9aa6c4]">{email}</p>
         ) : null}
       </div>
       <div className="flex-1 overflow-y-auto p-3">
-        <p className="mb-2 px-3 text-[10px] font-semibold tracking-[0.18em] text-[#6b7799] uppercase">
+        <p className="mb-2 px-3 text-xs font-semibold tracking-wide text-[#6b7799]">
           Pipeline
         </p>
         <NavLinks onNavigate={() => setOpen(false)} />
@@ -93,7 +93,7 @@ export function AppSidebar({ email }: { email?: string | null }) {
           href="https://www.youtube.com/@TheCartelInsider"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-[#9aa6c4] transition-colors hover:bg-sidebar-accent hover:text-white"
+          className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-[#9aa6c4] transition-colors hover:bg-sidebar-accent hover:text-white"
         >
           <ExternalLink className="size-4 text-primary" />
           @TheCartelInsider
@@ -112,21 +112,21 @@ export function AppSidebar({ email }: { email?: string | null }) {
 
   return (
     <>
-      <aside className="hidden w-64 shrink-0 border-r border-sidebar-border md:block">
+      <aside className="hidden w-72 shrink-0 border-r border-sidebar-border md:block">
         {sidebarBody}
       </aside>
-      <div className="sticky top-0 z-20 flex items-center gap-3 border-b border-white/10 bg-[#050a16]/90 px-4 py-3 backdrop-blur-md md:hidden">
+      <div className="sticky top-0 z-20 flex items-center gap-3 border-b border-white/10 bg-[#050a16]/90 px-4 py-3.5 backdrop-blur-md md:hidden">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger
-            render={<Button variant="outline" size="icon-sm" />}
+            render={<Button variant="outline" size="icon" />}
           >
-            <Menu className="size-4" />
+            <Menu className="size-5" />
           </SheetTrigger>
-          <SheetContent side="left" className="w-72 border-white/10 p-0">
+          <SheetContent side="left" className="w-80 border-white/10 p-0">
             {sidebarBody}
           </SheetContent>
         </Sheet>
-        <BrandWordmark subtitle="CRM" className="scale-90 origin-left" />
+        <BrandWordmark subtitle="CRM" />
       </div>
     </>
   );
