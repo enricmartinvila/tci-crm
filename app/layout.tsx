@@ -24,8 +24,12 @@ export const metadata: Metadata = {
   title: "The Cartel Insider · Sponsor CRM",
   description: "CRM privado para sponsors de The Cartel Insider",
   icons: {
-    icon: "/brand/tci-avatar.jpg",
-    apple: "/brand/tci-avatar.jpg",
+    icon: [
+      { url: "/brand/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: "/brand/favicon-32.png",
   },
 };
 
