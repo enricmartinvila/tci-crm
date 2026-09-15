@@ -1,0 +1,158 @@
+import type { ActivityType, DealStage, PriorityLevel } from "@/lib/types";
+
+export const PRIORITIES: PriorityLevel[] = ["A+", "A", "B", "C"];
+
+export const DEAL_STAGES: DealStage[] = [
+  "Researching",
+  "Ready to Contact",
+  "Contacted",
+  "Waiting Reply",
+  "Follow-up",
+  "Interested",
+  "Media Kit Sent",
+  "Negotiating",
+  "Sponsor Won",
+  "Not Now",
+  "Lost",
+];
+
+export const ACTIVE_DEAL_STAGES: DealStage[] = DEAL_STAGES.filter(
+  (s) => !["Sponsor Won", "Not Now", "Lost"].includes(s)
+);
+
+export const ACTIVITY_TYPES: { value: ActivityType; label: string }[] = [
+  { value: "email_sent", label: "Email sent" },
+  { value: "linkedin_message", label: "LinkedIn message" },
+  { value: "instagram_dm", label: "Instagram DM" },
+  { value: "form_submitted", label: "Form submitted" },
+  { value: "follow_up", label: "Follow-up" },
+  { value: "reply", label: "Reply" },
+  { value: "call", label: "Call" },
+  { value: "note", label: "Note" },
+];
+
+export const COMPANY_STATUSES = [
+  "Not contacted",
+  "Researching",
+  "Ready to Contact",
+  "Contacted",
+  "Waiting Reply",
+  "Follow-up",
+  "Interested",
+  "Negotiating",
+  "Sponsor Won",
+  "Not Now",
+  "Lost",
+] as const;
+
+/** Map Attio/CSV pipeline labels → CRM deal stages */
+export const STAGE_IMPORT_MAP: Record<string, DealStage> = {
+  "Not contacted": "Researching",
+  Researching: "Researching",
+  "Ready to Contact": "Ready to Contact",
+  Contacted: "Contacted",
+  "Waiting Reply": "Waiting Reply",
+  "Follow-up": "Follow-up",
+  Interested: "Interested",
+  "Media Kit Sent": "Media Kit Sent",
+  Negotiating: "Negotiating",
+  "Sponsor Won": "Sponsor Won",
+  "Not Now": "Not Now",
+  Lost: "Lost",
+};
+
+export const COMPANY_CSV_DEFAULTS: Record<string, string> = {
+  name: "Company Name",
+  website: "Website",
+  category: "Category",
+  priority: "Priority",
+  youtube_fit: "YouTube Fit",
+  instagram_fit: "Instagram Fit",
+  creator_spend: "Proven Creator Spend",
+  thematic_fit: "Thematic Fit",
+  contactability: "Contactability",
+  score: "Weighted Score",
+  evidence: "Evidence of Creator Sponsorship",
+  comparable_channels: "Comparable Channels",
+  personalization_hook: "Personalization Hook",
+  exclusivity_conflicts: "Likely Exclusivity / Conflict",
+  evidence_url: "Research / Evidence URL",
+  evidence_confidence: "Evidence Confidence",
+  status: "Company Status",
+  next_action: "Next Action",
+  last_contact: "Last Contact",
+  next_followup: "Next Follow-up",
+  notes: "Notes",
+};
+
+export const CONTACT_CSV_DEFAULTS: Record<string, string> = {
+  name: "Full Name",
+  company: "Company",
+  contact_rank: "Contact Rank",
+  job_title: "Job Title",
+  employer: "Employer / Agency",
+  contact_type: "Contact Type",
+  why_this_contact: "Why This Contact",
+  linkedin_url: "LinkedIn / Route",
+  email: "Email",
+  verification_confidence: "Verification Confidence",
+  researched_at: "Verified / Researched",
+  source_url: "Source URL",
+  personalization: "Suggested Personalization",
+  outreach_status: "Outreach Status",
+  last_contact: "Last Contact",
+  next_followup: "Next Follow-up",
+  notes: "Notes",
+  is_placeholder: "Is Placeholder",
+};
+
+export const DEAL_CSV_DEFAULTS: Record<string, string> = {
+  name: "Deal Name",
+  company: "Company",
+  stage: "Pipeline Stage",
+  priority: "Priority",
+  category: "Category",
+  score: "Weighted Score",
+  next_action: "Next Action",
+  last_contact: "Last Contact",
+  next_followup: "Next Follow-up",
+  exclusivity: "Potential Exclusivity / Conflict",
+  evidence_url: "Research / Evidence URL",
+  notes: "Notes",
+  value: "Deal Value",
+  currency: "Currency",
+};
+
+export function priorityBadgeClass(priority: string | null | undefined): string {
+  switch (priority) {
+    case "A+":
+      return "bg-amber-500 text-white hover:bg-amber-500";
+    case "A":
+      return "bg-orange-500 text-white hover:bg-orange-500";
+    case "B":
+      return "bg-sky-500 text-white hover:bg-sky-500";
+    case "C":
+      return "bg-slate-400 text-white hover:bg-slate-400";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+}
+
+export function stageBadgeClass(stage: string | null | undefined): string {
+  switch (stage) {
+    case "Sponsor Won":
+      return "bg-emerald-600 text-white hover:bg-emerald-600";
+    case "Lost":
+    case "Not Now":
+      return "bg-slate-500 text-white hover:bg-slate-500";
+    case "Negotiating":
+    case "Interested":
+      return "bg-violet-600 text-white hover:bg-violet-600";
+    case "Contacted":
+    case "Waiting Reply":
+    case "Follow-up":
+      return "bg-blue-600 text-white hover:bg-blue-600";
+    default:
+      return "bg-zinc-200 text-zinc-800 hover:bg-zinc-200";
+  }
+}
