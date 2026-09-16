@@ -29,33 +29,32 @@ export default async function CompanyDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: company } = await supabase
-    .from("companies")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+  const [
+    { data: company },
+    { data: contacts },
+    { data: deals },
+    { data: activities },
+  ] = await Promise.all([
+    supabase.from("companies").select("*").eq("id", id).maybeSingle(),
+    supabase
+      .from("contacts")
+      .select("*")
+      .eq("company_id", id)
+      .order("contact_rank", { ascending: true, nullsFirst: false }),
+    supabase
+      .from("deals")
+      .select("*")
+      .eq("company_id", id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("activities")
+      .select("*, contacts(id, name)")
+      .eq("company_id", id)
+      .order("happened_at", { ascending: false }),
+  ]);
 
   if (!company) notFound();
   const c = company as Company;
-
-  const [{ data: contacts }, { data: deals }, { data: activities }] =
-    await Promise.all([
-      supabase
-        .from("contacts")
-        .select("*")
-        .eq("company_id", id)
-        .order("contact_rank", { ascending: true, nullsFirst: false }),
-      supabase
-        .from("deals")
-        .select("*")
-        .eq("company_id", id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("activities")
-        .select("*, contacts(id, name)")
-        .eq("company_id", id)
-        .order("happened_at", { ascending: false }),
-    ]);
 
   const contactList = (contacts || []) as Contact[];
   const dealList = (deals || []) as Deal[];

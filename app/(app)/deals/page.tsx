@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Deal } from "@/lib/types";
-import { normalizeDealStage } from "@/lib/constants";
 import { DealsViews } from "@/components/deals/deals-views";
 import { DealsFilters } from "@/components/deals/deals-filters";
 
@@ -23,6 +22,7 @@ export default async function DealsPage({
   let query = supabase.from("deals").select("*, companies(id, name)");
 
   if (params.priority) query = query.eq("priority", params.priority);
+  if (params.stage) query = query.eq("stage", params.stage);
 
   const sort = params.sort || "updated_desc";
   if (sort === "name_asc") query = query.order("name", { ascending: true });
@@ -41,12 +41,6 @@ export default async function DealsPage({
 
   const { data, error } = await query;
   let deals = (data || []) as Deal[];
-
-  if (params.stage) {
-    deals = deals.filter(
-      (d) => normalizeDealStage(d.stage) === params.stage
-    );
-  }
 
   if (params.q) {
     const q = params.q.trim().toLowerCase();

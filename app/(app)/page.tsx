@@ -15,33 +15,51 @@ export default async function DashboardPage() {
   const [
     { data: companies },
     { data: deals },
+    { count: followupCompanyCount },
+    { count: followupContactCount },
+    { count: followupDealCount },
     { data: companyFollowups },
     { data: contactFollowups },
     { data: dealFollowups },
   ] = await Promise.all([
     supabase.from("companies").select("id, name, status, priority, score"),
-    supabase.from("deals").select("id, stage, priority"),
+    supabase.from("deals").select("stage"),
+    supabase
+      .from("companies")
+      .select("id", { count: "exact", head: true })
+      .lte("next_followup", today)
+      .not("next_followup", "is", null),
+    supabase
+      .from("contacts")
+      .select("id", { count: "exact", head: true })
+      .lte("next_followup", today)
+      .not("next_followup", "is", null),
+    supabase
+      .from("deals")
+      .select("id", { count: "exact", head: true })
+      .lte("next_followup", today)
+      .not("next_followup", "is", null),
     supabase
       .from("companies")
       .select("id, name, next_followup, priority, status")
       .lte("next_followup", today)
       .not("next_followup", "is", null)
       .order("next_followup", { ascending: true })
-      .limit(10),
+      .limit(8),
     supabase
       .from("contacts")
       .select("id, name, next_followup, company_id, companies(id, name)")
       .lte("next_followup", today)
       .not("next_followup", "is", null)
       .order("next_followup", { ascending: true })
-      .limit(10),
+      .limit(8),
     supabase
       .from("deals")
       .select("id, name, next_followup, company_id, companies(id, name)")
       .lte("next_followup", today)
       .not("next_followup", "is", null)
       .order("next_followup", { ascending: true })
-      .limit(10),
+      .limit(8),
   ]);
 
   const statusCounts = new Map<string, number>();
@@ -59,9 +77,9 @@ export default async function DashboardPage() {
   const wonDeals = (deals || []).filter((d) => d.stage === "Sponsor Won").length;
 
   const followupCount =
-    (companyFollowups?.length || 0) +
-    (contactFollowups?.length || 0) +
-    (dealFollowups?.length || 0);
+    (followupCompanyCount || 0) +
+    (followupContactCount || 0) +
+    (followupDealCount || 0);
 
   const cards = [
     {

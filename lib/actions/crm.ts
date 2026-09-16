@@ -313,23 +313,23 @@ export async function updateDeal(id: string, formData: FormData) {
 
 export async function updateDealStage(id: string, stage: DealStage) {
   const { supabase } = await requireUser();
-  const { data: deal, error: fetchError } = await supabase
+
+  // One round-trip: update stage and return company_id
+  const { data: deal, error } = await supabase
     .from("deals")
-    .select("company_id")
+    .update({ stage })
     .eq("id", id)
+    .select("company_id")
     .maybeSingle();
-  if (fetchError) return { error: fetchError.message };
 
-  const { error } = await supabase.from("deals").update({ stage }).eq("id", id);
   if (error) return { error: error.message };
+  if (!deal) return { error: "Deal no encontrado" };
 
-  if (deal?.company_id) {
-    await syncCompanyStatusFromDealStage(supabase, deal.company_id, stage);
-    revalidatePath(`/companies/${deal.company_id}`);
+  if (deal.company_id) {
+    // Don't block the client on company status sync
+    void syncCompanyStatusFromDealStage(supabase, deal.company_id, stage);
   }
-  revalidatePath("/deals");
-  revalidatePath("/companies");
-  revalidatePath("/");
+  // Skip revalidatePath — kanban already updated optimistically.
   return { error: null };
 }
 
