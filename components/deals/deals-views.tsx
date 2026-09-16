@@ -7,7 +7,6 @@ import { updateDealStage } from "@/lib/actions/crm";
 import { DEAL_STAGES, normalizeDealStage } from "@/lib/constants";
 import type { Deal, DealStage } from "@/lib/types";
 import { PriorityBadge, StageBadge } from "@/components/badges";
-import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/form-fields";
 import {
   Table,
@@ -65,21 +64,29 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <Button
-          size="sm"
-          variant={view === "kanban" ? "default" : "outline"}
+      <div className="inline-flex rounded-lg border border-border bg-muted/60 p-1">
+        <button
+          type="button"
           onClick={() => setView("kanban")}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            view === "kanban"
+              ? "bg-brand text-brand-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
         >
           Kanban
-        </Button>
-        <Button
-          size="sm"
-          variant={view === "table" ? "default" : "outline"}
+        </button>
+        <button
+          type="button"
           onClick={() => setView("table")}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            view === "table"
+              ? "bg-brand text-brand-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
         >
           Tabla
-        </Button>
+        </button>
       </div>
 
       {view === "table" ? (
@@ -184,10 +191,12 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
                   if (id) moveDeal(id, stage);
                 }}
               >
-                <div className="border-b px-3 py-2">
-                  <p className="text-sm font-medium">{stage}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {column.length}
+                <div className="border-b border-border px-3 py-2.5">
+                  <p className="text-sm font-semibold tracking-tight text-foreground">
+                    {stage}
+                  </p>
+                  <p className="mt-0.5 text-xs font-medium text-muted-foreground">
+                    {column.length} deal{column.length === 1 ? "" : "s"}
                   </p>
                 </div>
                 <div className="flex min-h-24 flex-1 flex-col gap-2 p-2">
