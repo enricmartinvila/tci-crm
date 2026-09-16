@@ -19,16 +19,9 @@ export const CLOSED_DEAL_STAGES: DealStage[] = [
   "Lost",
 ];
 
-export const ACTIVE_DEAL_STAGES: DealStage[] = [
-  "Researching",
-  "Ready to Contact",
-  "Contacted",
-  "Waiting Reply",
-  "Follow-up",
-  "Interested",
-  "Media Kit Sent",
-  "Negotiating",
-];
+export const ACTIVE_DEAL_STAGES: DealStage[] = DEAL_STAGES.filter(
+  (s) => !CLOSED_DEAL_STAGES.includes(s)
+);
 
 export const ACTIVITY_TYPES: { value: ActivityType; label: string }[] = [
   { value: "note", label: "Nota" },
@@ -50,8 +43,8 @@ export const NOTE_ACTIVITY_TYPES: ActivityType[] = [
   "reply",
 ];
 
+/** Same pipeline as deals (no Ready to Contact / Waiting Reply / Media Kit Sent) */
 export const COMPANY_STATUSES = [
-  "Not contacted",
   "Researching",
   "Contacted",
   "Follow-up",
@@ -84,6 +77,14 @@ export function statusToDealStage(
 ): DealStage | null {
   if (!status) return null;
   return STAGE_IMPORT_MAP[status] ?? null;
+}
+
+/** Normalize legacy company statuses to the simplified pipeline */
+export function normalizeCompanyStatus(
+  status: string | null | undefined
+): string {
+  if (!status) return "Researching";
+  return STAGE_IMPORT_MAP[status] || status;
 }
 
 /** Normalize legacy stages removed from the UI pipeline */

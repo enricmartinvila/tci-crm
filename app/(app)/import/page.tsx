@@ -160,7 +160,12 @@ export default function ImportPage() {
               evidence_url: getMapped(row, "evidence_url")?.trim() || null,
               evidence_confidence:
                 getMapped(row, "evidence_confidence")?.trim() || null,
-              status: getMapped(row, "status")?.trim() || "Not contacted",
+              status:
+                STAGE_IMPORT_MAP[
+                  (getMapped(row, "status")?.trim() || "Not contacted") as string
+                ] ||
+                getMapped(row, "status")?.trim() ||
+                "Researching",
               next_action: getMapped(row, "next_action")?.trim() || null,
               last_contact: parseDate(getMapped(row, "last_contact")),
               next_followup: parseDate(getMapped(row, "next_followup")),

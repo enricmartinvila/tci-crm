@@ -4,7 +4,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { updateCompanyField } from "@/lib/actions/crm";
 import type { Company } from "@/lib/types";
-import { COMPANY_STATUSES, PRIORITIES } from "@/lib/constants";
+import { COMPANY_STATUSES, PRIORITIES, normalizeCompanyStatus } from "@/lib/constants";
 import { PriorityBadge, StatusBadge } from "@/components/badges";
 import { NativeSelect } from "@/components/form-fields";
 import {
@@ -95,10 +95,10 @@ export function CompaniesTable({ companies }: { companies: Company[] }) {
               <TableCell>{c.score ?? "—"}</TableCell>
               <TableCell>
                 <div className="flex flex-col gap-1">
-                  <StatusBadge status={c.status} />
+                  <StatusBadge status={normalizeCompanyStatus(c.status)} />
                   <NativeSelect
-                    className="h-7 min-w-[140px]"
-                    defaultValue={c.status || ""}
+                    className="h-10 min-w-[150px]"
+                    defaultValue={normalizeCompanyStatus(c.status)}
                     onChange={(e) =>
                       onFieldChange(c.id, "status", e.target.value)
                     }

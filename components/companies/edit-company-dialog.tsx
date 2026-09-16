@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Pencil } from "lucide-react";
 import { updateCompany } from "@/lib/actions/crm";
 import type { Company } from "@/lib/types";
-import { COMPANY_STATUSES, PRIORITIES } from "@/lib/constants";
+import { COMPANY_STATUSES, PRIORITIES, normalizeCompanyStatus } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -76,7 +76,10 @@ export function EditCompanyDialog({ company }: { company: Company }) {
             </NativeSelect>
           </Field>
           <Field label="Status">
-            <NativeSelect name="status" defaultValue={company.status || ""}>
+            <NativeSelect
+              name="status"
+              defaultValue={normalizeCompanyStatus(company.status)}
+            >
               {COMPANY_STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {s}

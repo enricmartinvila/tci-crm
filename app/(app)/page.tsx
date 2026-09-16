@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { ACTIVE_DEAL_STAGES } from "@/lib/constants";
+import { ACTIVE_DEAL_STAGES, normalizeCompanyStatus } from "@/lib/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PriorityBadge, StatusBadge } from "@/components/badges";
 
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
 
   const statusCounts = new Map<string, number>();
   for (const c of companies || []) {
-    const key = c.status || "Sin status";
+    const key = normalizeCompanyStatus(c.status) || "Sin status";
     statusCounts.set(key, (statusCounts.get(key) || 0) + 1);
   }
 

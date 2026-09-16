@@ -13,6 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { normalizeCompanyStatus } from "@/lib/constants";
 
 function boolLabel(v: boolean | null | undefined) {
   if (v === true) return "Yes";
@@ -91,7 +92,7 @@ export default async function CompanyDetailPage({
           </h1>
           <div className="flex flex-wrap items-center gap-2">
             <PriorityBadge priority={c.priority} />
-            <StatusBadge status={c.status} />
+            <StatusBadge status={normalizeCompanyStatus(c.status)} />
             {c.category ? <Badge variant="outline">{c.category}</Badge> : null}
             {c.score != null ? (
               <Badge variant="secondary">Score {c.score}</Badge>

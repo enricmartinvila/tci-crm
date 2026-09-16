@@ -63,7 +63,7 @@ export function CreateCompanyDialog() {
             </NativeSelect>
           </Field>
           <Field label="Status">
-            <NativeSelect name="status" defaultValue="Not contacted">
+            <NativeSelect name="status" defaultValue="Researching">
               {COMPANY_STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {s}

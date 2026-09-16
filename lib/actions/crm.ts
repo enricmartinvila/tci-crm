@@ -70,7 +70,7 @@ export async function createCompany(formData: FormData) {
     website: emptyToNull(formData.get("website")),
     category: emptyToNull(formData.get("category")),
     priority: emptyToNull(formData.get("priority")) as PriorityLevel | null,
-    status: emptyToNull(formData.get("status")) || "Not contacted",
+    status: emptyToNull(formData.get("status")) || "Researching",
     next_action: emptyToNull(formData.get("next_action")),
     notes: emptyToNull(formData.get("notes")),
     youtube_fit: toInt(formData.get("youtube_fit")),
