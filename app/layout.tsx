@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const sans = Plus_Jakarta_Sans({
-  weight: ["400", "500", "600", "700", "800"],
+const sans = Geist({
   variable: "--font-sans",
   subsets: ["latin"],
 });
@@ -34,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className="dark">
-      <body className={`${sans.variable} ${mono.variable} antialiased`}>
+      <body className={`${sans.variable} ${mono.variable} font-sans antialiased`}>
         {children}
         <Toaster richColors position="top-right" theme="dark" />
       </body>

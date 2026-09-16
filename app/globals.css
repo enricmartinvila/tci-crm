@@ -123,10 +123,9 @@
   }
   html {
     font-size: 16px;
-    @apply font-sans;
   }
   body {
-    @apply bg-background text-foreground text-base leading-relaxed;
+    @apply bg-background text-foreground text-base leading-relaxed font-sans;
     background-image:
       radial-gradient(ellipse 80% 50% at 0% -10%, rgb(225 29 46 / 18%), transparent),
       radial-gradient(ellipse 60% 40% at 100% 0%, rgb(30 58 138 / 35%), transparent),
@@ -140,10 +139,10 @@
   h2,
   h3,
   .font-display {
-    font-family: var(--font-sans), system-ui, sans-serif;
-    letter-spacing: -0.02em;
-    font-weight: 700;
-    line-height: 1.2;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.025em;
+    font-weight: 600;
+    line-height: 1.25;
   }
 }
 
