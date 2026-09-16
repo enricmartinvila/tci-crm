@@ -64,12 +64,12 @@
   --secondary-foreground: #132047;
   --muted: #eef2f9;
   --muted-foreground: #5b6b8c;
-  --accent: #e8eefc;
-  --accent-foreground: #132047;
+  --accent: #dbe4f8;
+  --accent-foreground: #0a1440;
   --destructive: #c51222;
   --border: rgb(15 30 70 / 12%);
   --input: rgb(15 30 70 / 14%);
-  --ring: #d41022;
+  --ring: #0a1440;
   --brand: #0a1440;
   --brand-foreground: #ffffff;
   --chart-1: #d41022;
@@ -110,7 +110,7 @@
   --destructive: #ff4d5a;
   --border: rgb(255 255 255 / 10%);
   --input: rgb(255 255 255 / 12%);
-  --ring: #e11d2e;
+  --ring: #2b4a9b;
   --brand: #08103a;
   --brand-foreground: #ffffff;
   --chart-1: #e11d2e;
@@ -141,6 +141,7 @@
   }
   body {
     @apply bg-background text-foreground text-base leading-relaxed font-sans;
+    accent-color: var(--brand);
     background-image:
       radial-gradient(ellipse 80% 50% at 0% -10%, var(--page-glow-a), transparent),
       radial-gradient(ellipse 60% 40% at 100% 0%, var(--page-glow-b), transparent),

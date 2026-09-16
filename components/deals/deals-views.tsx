@@ -158,7 +158,7 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
               <div
                 key={stage}
                 data-stage={stage}
-                className="flex w-64 shrink-0 flex-col rounded-lg border bg-muted/30 transition-colors data-[drag-over=true]:border-primary data-[drag-over=true]:bg-primary/5"
+                className="flex w-64 shrink-0 flex-col rounded-lg border bg-muted/30 transition-colors data-[drag-over=true]:border-brand data-[drag-over=true]:bg-brand/5"
                 onDragOver={(e) => {
                   e.preventDefault();
                   e.dataTransfer.dropEffect = "move";
