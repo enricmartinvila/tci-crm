@@ -1,11 +1,24 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { ACTIVE_DEAL_STAGES, normalizeCompanyStatus } from "@/lib/constants";
+import {
+  ACTIVE_DEAL_STAGES,
+  DEAL_STAGES,
+  normalizeDealStage,
+} from "@/lib/constants";
+import type { DealStage } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PriorityBadge, StatusBadge } from "@/components/badges";
+import { PriorityBadge, StageBadge } from "@/components/badges";
+import { Badge } from "@/components/ui/badge";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function daysOverdue(date: string, today: string) {
+  const diff = Math.floor(
+    (new Date(today).getTime() - new Date(date).getTime()) / 86400000
+  );
+  return diff > 0 ? diff : 0;
 }
 
 export default async function DashboardPage() {
@@ -13,7 +26,7 @@ export default async function DashboardPage() {
   const today = todayISO();
 
   const [
-    { data: companies },
+    { count: companyCount },
     { data: deals },
     { count: followupCompanyCount },
     { count: followupContactCount },
@@ -21,9 +34,10 @@ export default async function DashboardPage() {
     { data: companyFollowups },
     { data: contactFollowups },
     { data: dealFollowups },
+    { data: recentActivities },
   ] = await Promise.all([
-    supabase.from("companies").select("id, name, status, priority, score"),
-    supabase.from("deals").select("stage"),
+    supabase.from("companies").select("id", { count: "exact", head: true }),
+    supabase.from("deals").select("id, stage, value, currency"),
     supabase
       .from("companies")
       .select("id", { count: "exact", head: true })
@@ -45,7 +59,7 @@ export default async function DashboardPage() {
       .lte("next_followup", today)
       .not("next_followup", "is", null)
       .order("next_followup", { ascending: true })
-      .limit(8),
+      .limit(12),
     supabase
       .from("contacts")
       .select("id, name, next_followup, company_id, companies(id, name)")
@@ -60,49 +74,141 @@ export default async function DashboardPage() {
       .not("next_followup", "is", null)
       .order("next_followup", { ascending: true })
       .limit(8),
+    supabase
+      .from("activities")
+      .select(
+        "id, type, comment, happened_at, company_id, companies(id, name)"
+      )
+      .order("happened_at", { ascending: false })
+      .limit(6),
   ]);
 
-  const statusCounts = new Map<string, number>();
-  for (const c of companies || []) {
-    const key = normalizeCompanyStatus(c.status) || "Sin status";
-    statusCounts.set(key, (statusCounts.get(key) || 0) + 1);
+  const stageCounts = new Map<DealStage, number>();
+  for (const stage of DEAL_STAGES) stageCounts.set(stage, 0);
+  let pipelineValue = 0;
+  let wonValue = 0;
+  for (const d of deals || []) {
+    const stage = normalizeDealStage(d.stage);
+    stageCounts.set(stage, (stageCounts.get(stage) || 0) + 1);
+    const value = Number(d.value) || 0;
+    if (ACTIVE_DEAL_STAGES.includes(stage)) pipelineValue += value;
+    if (stage === "Sponsor Won") wonValue += value;
   }
 
-  const priorityA = (companies || []).filter(
-    (c) => c.priority === "A+" || c.priority === "A"
-  ).length;
   const activeDeals = (deals || []).filter((d) =>
-    ACTIVE_DEAL_STAGES.includes(d.stage)
+    ACTIVE_DEAL_STAGES.includes(normalizeDealStage(d.stage))
   ).length;
-  const wonDeals = (deals || []).filter((d) => d.stage === "Sponsor Won").length;
+  const negotiating = stageCounts.get("Negotiating") || 0;
+  const interested = stageCounts.get("Interested") || 0;
+  const wonDeals = stageCounts.get("Sponsor Won") || 0;
+  const closedLost =
+    (stageCounts.get("Lost") || 0) + (stageCounts.get("Not Now") || 0);
+  const decided = wonDeals + closedLost;
+  const winRate = decided > 0 ? Math.round((wonDeals / decided) * 100) : null;
 
   const followupCount =
     (followupCompanyCount || 0) +
     (followupContactCount || 0) +
     (followupDealCount || 0);
 
+  type FollowRow = {
+    key: string;
+    href: string;
+    title: string;
+    subtitle?: string;
+    date: string;
+    priority?: string | null;
+    kind: "Empresa" | "Contacto" | "Deal";
+  };
+
+  const followRows: FollowRow[] = [
+    ...(companyFollowups || []).map((c) => ({
+      key: `co-${c.id}`,
+      href: `/companies/${c.id}`,
+      title: c.name,
+      date: c.next_followup as string,
+      priority: c.priority,
+      kind: "Empresa" as const,
+    })),
+    ...(contactFollowups || []).map((c) => {
+      const company = Array.isArray(c.companies) ? c.companies[0] : c.companies;
+      return {
+        key: `ct-${c.id}`,
+        href: company ? `/companies/${company.id}` : "/contacts",
+        title: c.name,
+        subtitle: company?.name,
+        date: c.next_followup as string,
+        kind: "Contacto" as const,
+      };
+    }),
+    ...(dealFollowups || []).map((d) => {
+      const company = Array.isArray(d.companies) ? d.companies[0] : d.companies;
+      return {
+        key: `de-${d.id}`,
+        href: company ? `/companies/${company.id}` : "/deals",
+        title: d.name,
+        subtitle: company?.name,
+        date: d.next_followup as string,
+        kind: "Deal" as const,
+      };
+    }),
+  ].sort((a, b) => a.date.localeCompare(b.date));
+
+  const overdueCount = followRows.filter((r) => r.date < today).length;
+  const maxStage = Math.max(1, ...stageCounts.values());
+
   const cards = [
-    {
-      title: "Prioritarias A+ / A",
-      value: priorityA,
-      href: "/companies?priority=A",
-    },
     {
       title: "Follow-ups pendientes",
       value: followupCount,
+      hint:
+        overdueCount > 0
+          ? `${overdueCount} overdue`
+          : followupCount > 0
+            ? "Hoy o antes"
+            : "Al día",
       href: "/follow-ups",
+      accent: overdueCount > 0,
+    },
+    {
+      title: "En negociación",
+      value: negotiating,
+      hint: interested > 0 ? `${interested} interested` : "Pipeline caliente",
+      href: "/deals?stage=Negotiating",
     },
     {
       title: "Deals activos",
       value: activeDeals,
+      hint:
+        pipelineValue > 0
+          ? `${pipelineValue.toLocaleString("es-ES")} € en pipeline`
+          : `${companyCount || 0} empresas`,
       href: "/deals",
     },
     {
       title: "Sponsors ganados",
       value: wonDeals,
-      href: "/deals",
+      hint:
+        winRate != null
+          ? `${winRate}% win rate`
+          : wonValue > 0
+            ? `${wonValue.toLocaleString("es-ES")} €`
+            : "Cerrados",
+      href: "/deals?stage=Sponsor%20Won",
     },
   ];
+
+  const activityLabel: Record<string, string> = {
+    note: "Nota",
+    meeting: "Reunión",
+    call: "Call",
+    email_sent: "Email",
+    linkedin_message: "LinkedIn",
+    instagram_dm: "IG DM",
+    form_submitted: "Form",
+    follow_up: "Follow-up",
+    reply: "Reply",
+  };
 
   return (
     <div className="space-y-6">
@@ -118,14 +224,18 @@ export default async function DashboardPage() {
           Sponsor Desk
         </h1>
         <p className="mt-2 max-w-xl text-base text-muted-foreground">
-          Pipeline de sponsors, follow-ups y deals activos.
+          Qué toca hoy: follow-ups, negociación y estado del pipeline.
         </p>
       </div>
 
       <div className="tci-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
           <Link key={card.title} href={card.href} className="tci-animate-in">
-            <Card className="tci-panel transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10">
+            <Card
+              className={`tci-panel h-full transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 ${
+                card.accent ? "border-primary/40" : ""
+              }`}
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-medium text-muted-foreground">
                   {card.title}
@@ -135,142 +245,186 @@ export default async function DashboardPage() {
                 <p className="text-4xl font-extrabold tracking-tight text-foreground">
                   {card.value}
                 </p>
+                <p
+                  className={`mt-1 text-sm ${
+                    card.accent ? "font-medium text-primary" : "text-muted-foreground"
+                  }`}
+                >
+                  {card.hint}
+                </p>
               </CardContent>
             </Card>
           </Link>
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="tci-panel">
-          <CardHeader>
-            <CardTitle className="text-base">Empresas por estado</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {[...statusCounts.entries()]
-              .sort((a, b) => b[1] - a[1])
-              .map(([status, count]) => (
-                <div
-                  key={status}
-                  className="flex items-center justify-between gap-2 text-sm"
-                >
-                  <StatusBadge status={status} />
-                  <span className="font-medium">{count}</span>
-                </div>
-              ))}
-            {statusCounts.size === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Sin empresas todavía. Usa Import para cargar el CSV.
+      <div className="grid gap-4 lg:grid-cols-5">
+        <Card className="tci-panel lg:col-span-3">
+          <CardHeader className="flex flex-row items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-base">Follow-ups hoy / overdue</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Lo primero que deberías tocar hoy.
               </p>
-            ) : null}
-          </CardContent>
-        </Card>
-
-        <Card className="tci-panel">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">Follow-ups hoy / overdue</CardTitle>
+            </div>
             <Link
               href="/follow-ups"
-              className="text-sm text-primary hover:underline"
+              className="shrink-0 text-sm text-primary hover:underline"
             >
               Ver todos
             </Link>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {(companyFollowups || []).map((c) => (
-              <div key={`co-${c.id}`} className="flex justify-between gap-2">
+          <CardContent className="space-y-1">
+            {followRows.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No hay follow-ups pendientes. Buen momento para avanzar deals.
+              </p>
+            ) : (
+              followRows.map((row) => {
+                const overdue = daysOverdue(row.date, today);
+                return (
+                  <Link
+                    key={row.key}
+                    href={row.href}
+                    className="flex items-center justify-between gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/60"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="truncate font-medium text-foreground">
+                          {row.title}
+                        </span>
+                        <Badge variant="secondary" className="text-[11px]">
+                          {row.kind}
+                        </Badge>
+                        {row.priority ? (
+                          <PriorityBadge priority={row.priority} />
+                        ) : null}
+                      </div>
+                      {row.subtitle ? (
+                        <p className="truncate text-sm text-muted-foreground">
+                          {row.subtitle}
+                        </p>
+                      ) : null}
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p
+                        className={`text-sm font-medium ${
+                          overdue > 0 ? "text-primary" : "text-muted-foreground"
+                        }`}
+                      >
+                        {row.date}
+                      </p>
+                      {overdue > 0 ? (
+                        <p className="text-xs text-primary">
+                          {overdue === 1 ? "1 día overdue" : `${overdue} días overdue`}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">Hoy</p>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="tci-panel lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base">Pipeline por stage</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Dónde están los deals ahora mismo.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {DEAL_STAGES.map((stage) => {
+              const count = stageCounts.get(stage) || 0;
+              const pct = Math.round((count / maxStage) * 100);
+              return (
                 <Link
-                  href={`/companies/${c.id}`}
-                  className="font-medium hover:underline"
+                  key={stage}
+                  href={`/deals?stage=${encodeURIComponent(stage)}`}
+                  className="block space-y-1.5 rounded-md p-1 transition-colors hover:bg-muted/50"
                 >
-                  {c.name}
+                  <div className="flex items-center justify-between gap-2 text-sm">
+                    <StageBadge stage={stage} />
+                    <span className="font-semibold tabular-nums">{count}</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-primary/80 transition-all"
+                      style={{ width: `${count === 0 ? 0 : Math.max(pct, 8)}%` }}
+                    />
+                  </div>
                 </Link>
-                <div className="flex items-center gap-2">
-                  <PriorityBadge priority={c.priority} />
-                  <span className="text-muted-foreground">{c.next_followup}</span>
-                </div>
-              </div>
-            ))}
-            {(contactFollowups || []).map((c) => {
-              const company = Array.isArray(c.companies)
-                ? c.companies[0]
-                : c.companies;
-              return (
-                <div key={`ct-${c.id}`} className="flex justify-between gap-2">
-                  <div>
-                    <span className="font-medium">{c.name}</span>
-                    {company ? (
-                      <Link
-                        href={`/companies/${company.id}`}
-                        className="ml-1 text-muted-foreground hover:underline"
-                      >
-                        · {company.name}
-                      </Link>
-                    ) : null}
-                  </div>
-                  <span className="text-muted-foreground">{c.next_followup}</span>
-                </div>
               );
             })}
-            {(dealFollowups || []).map((d) => {
-              const company = Array.isArray(d.companies)
-                ? d.companies[0]
-                : d.companies;
-              return (
-                <div key={`de-${d.id}`} className="flex justify-between gap-2">
-                  <div>
-                    <span className="font-medium">{d.name}</span>
-                    {company ? (
-                      <Link
-                        href={`/companies/${company.id}`}
-                        className="ml-1 text-muted-foreground hover:underline"
-                      >
-                        · {company.name}
-                      </Link>
-                    ) : null}
-                  </div>
-                  <span className="text-muted-foreground">{d.next_followup}</span>
-                </div>
-              );
-            })}
-            {followupCount === 0 ? (
-              <p className="text-muted-foreground">No hay follow-ups pendientes</p>
+            {(deals || []).length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Sin deals todavía. Crea uno desde una empresa.
+              </p>
             ) : null}
           </CardContent>
         </Card>
       </div>
 
       <Card className="tci-panel">
-        <CardHeader>
-          <CardTitle className="text-base">Empresas prioritarias A+ / A</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-base">Actividad reciente</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Últimas notas, calls y reuniones.
+            </p>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-2">
-          {(companies || [])
-            .filter((c) => c.priority === "A+" || c.priority === "A")
-            .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
-            .slice(0, 12)
-            .map((c) => (
-              <div
-                key={c.id}
-                className="flex items-center justify-between gap-2 text-sm"
-              >
+        <CardContent className="space-y-1">
+          {(recentActivities || []).length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Aún no hay actividad registrada.
+            </p>
+          ) : (
+            (recentActivities || []).map((a) => {
+              const company = Array.isArray(a.companies)
+                ? a.companies[0]
+                : a.companies;
+              const when = a.happened_at
+                ? new Date(a.happened_at).toLocaleString("es-ES", {
+                    day: "2-digit",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "—";
+              return (
                 <Link
-                  href={`/companies/${c.id}`}
-                  className="font-medium hover:underline"
+                  key={a.id}
+                  href={company ? `/companies/${company.id}` : "/companies"}
+                  className="flex items-start justify-between gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/60"
                 >
-                  {c.name}
-                </Link>
-                <div className="flex items-center gap-2">
-                  <PriorityBadge priority={c.priority} />
-                  <span className="text-muted-foreground">
-                    {c.score ?? "—"}
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="secondary">
+                        {activityLabel[a.type] || a.type}
+                      </Badge>
+                      {company ? (
+                        <span className="truncate text-sm font-medium">
+                          {company.name}
+                        </span>
+                      ) : null}
+                    </div>
+                    {a.comment ? (
+                      <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                        {a.comment}
+                      </p>
+                    ) : null}
+                  </div>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {when}
                   </span>
-                </div>
-              </div>
-            ))}
-          {priorityA === 0 ? (
-            <p className="text-sm text-muted-foreground">Sin prioritarias</p>
-          ) : null}
+                </Link>
+              );
+            })
+          )}
         </CardContent>
       </Card>
     </div>

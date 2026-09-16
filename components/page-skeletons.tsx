@@ -27,19 +27,39 @@ export function DashboardSkeleton() {
           <div key={i} className="tci-panel space-y-3 p-5">
             <Skeleton className="h-4 w-28" />
             <Skeleton className="h-10 w-16" />
+            <Skeleton className="h-3 w-24" />
           </div>
         ))}
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        {Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="tci-panel space-y-3 p-5">
-            <Skeleton className="h-5 w-40" />
-            {Array.from({ length: 5 }).map((__, j) => (
-              <div key={j} className="flex items-center justify-between gap-3">
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-4 w-12" />
+      <div className="grid gap-4 lg:grid-cols-5">
+        <div className="tci-panel space-y-3 p-5 lg:col-span-3">
+          <Skeleton className="h-5 w-48" />
+          {Array.from({ length: 6 }).map((_, j) => (
+            <div key={j} className="flex items-center justify-between gap-3">
+              <Skeleton className="h-4 w-44" />
+              <Skeleton className="h-4 w-20" />
+            </div>
+          ))}
+        </div>
+        <div className="tci-panel space-y-3 p-5 lg:col-span-2">
+          <Skeleton className="h-5 w-40" />
+          {Array.from({ length: 6 }).map((_, j) => (
+            <div key={j} className="space-y-1.5">
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-6" />
               </div>
-            ))}
+              <Skeleton className="h-1.5 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="tci-panel space-y-3 p-5">
+        <Skeleton className="h-5 w-40" />
+        {Array.from({ length: 4 }).map((_, j) => (
+          <div key={j} className="flex items-center justify-between gap-3">
+            <Skeleton className="h-4 w-56" />
+            <Skeleton className="h-3 w-16" />
           </div>
         ))}
       </div>
