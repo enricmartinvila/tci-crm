@@ -105,7 +105,7 @@ export default async function FollowUpsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
           Follow-ups
         </h1>
         <p className="text-sm text-muted-foreground">

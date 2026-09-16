@@ -17,6 +17,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { BrandWordmark } from "@/components/brand";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -45,14 +46,14 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             className={cn(
               "group flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium transition-all",
               active
-                ? "bg-primary text-primary-foreground shadow-md shadow-red-950/40"
-                : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white"
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
             )}
           >
             <Icon
               className={cn(
                 "size-5 transition-transform group-hover:scale-105",
-                active ? "text-white" : "text-[#9aa6c4]"
+                active ? "text-primary-foreground" : "text-muted-foreground"
               )}
             />
             {label}
@@ -75,32 +76,33 @@ export function AppSidebar({ email }: { email?: string | null }) {
   }
 
   const sidebarBody = (
-    <div className="flex h-full flex-col bg-sidebar">
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="border-b border-sidebar-border px-4 py-5">
         <BrandWordmark />
         {email ? (
-          <p className="mt-3 truncate text-sm text-[#9aa6c4]">{email}</p>
+          <p className="mt-3 truncate text-sm text-muted-foreground">{email}</p>
         ) : null}
       </div>
       <div className="flex-1 overflow-y-auto p-3">
-        <p className="mb-2 px-3 text-xs font-semibold tracking-wide text-[#6b7799]">
+        <p className="mb-2 px-3 text-xs font-semibold tracking-wide text-muted-foreground">
           Pipeline
         </p>
         <NavLinks onNavigate={() => setOpen(false)} />
       </div>
-      <div className="space-y-2 border-t border-sidebar-border p-3">
+      <div className="space-y-1 border-t border-sidebar-border p-3">
+        <ThemeToggle />
         <a
           href="https://www.youtube.com/@TheCartelInsider"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-[#9aa6c4] transition-colors hover:bg-sidebar-accent hover:text-white"
+          className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
         >
           <ExternalLink className="size-4 text-primary" />
           @TheCartelInsider
         </a>
         <Button
           variant="ghost"
-          className="w-full justify-start gap-2 text-[#9aa6c4] hover:text-white"
+          className="w-full justify-start gap-2 text-muted-foreground hover:text-sidebar-foreground"
           onClick={signOut}
         >
           <LogOut className="size-4" />
@@ -112,17 +114,15 @@ export function AppSidebar({ email }: { email?: string | null }) {
 
   return (
     <>
-      <aside className="hidden w-72 shrink-0 border-r border-sidebar-border md:block">
+      <aside className="hidden w-72 shrink-0 border-r border-sidebar-border bg-sidebar md:block">
         {sidebarBody}
       </aside>
-      <div className="sticky top-0 z-20 flex items-center gap-3 border-b border-white/10 bg-[#050a16]/90 px-4 py-3.5 backdrop-blur-md md:hidden">
+      <div className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/90 px-4 py-3.5 backdrop-blur-md md:hidden">
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger
-            render={<Button variant="outline" size="icon" />}
-          >
+          <SheetTrigger render={<Button variant="outline" size="icon" />}>
             <Menu className="size-5" />
           </SheetTrigger>
-          <SheetContent side="left" className="w-80 border-white/10 p-0">
+          <SheetContent side="left" className="w-80 border-border p-0">
             {sidebarBody}
           </SheetContent>
         </Sheet>

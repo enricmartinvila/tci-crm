@@ -15,7 +15,7 @@ export function BrandMark({
       width={size}
       height={size}
       className={cn(
-        "tci-mark rounded-full ring-2 ring-white/20 shadow-lg shadow-red-900/30",
+        "tci-mark rounded-full ring-2 ring-border shadow-lg shadow-primary/20",
         className
       )}
       priority
@@ -34,8 +34,12 @@ export function BrandWordmark({
     <div className={cn("flex items-center gap-3", className)}>
       <BrandMark size={48} />
       <div className="min-w-0 leading-snug">
-        <p className="text-base font-bold text-white">The Cartel Insider</p>
-        <p className="truncate text-sm font-medium text-[#9aa6c4]">{subtitle}</p>
+        <p className="text-base font-bold text-foreground">
+          The Cartel Insider
+        </p>
+        <p className="truncate text-sm font-medium text-muted-foreground">
+          {subtitle}
+        </p>
       </div>
     </div>
   );

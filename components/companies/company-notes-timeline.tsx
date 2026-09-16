@@ -75,7 +75,7 @@ export function CompanyNotesTimeline({
   }
 
   return (
-    <Card className="tci-panel border-white/10 bg-card/70">
+    <Card className="tci-panel">
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0">
         <div>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -98,9 +98,9 @@ export function CompanyNotesTimeline({
         <form
           id="company-note-form"
           action={onSubmit}
-          className="rounded-xl border border-white/10 bg-black/20 p-4"
+          className="rounded-xl border border-border bg-muted/40 p-4"
         >
-          <p className="mb-3 text-sm font-semibold text-white">Nueva nota</p>
+          <p className="mb-3 text-sm font-semibold text-foreground">Nueva nota</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Tipo">
               <NativeSelect name="type" defaultValue="meeting" required>
@@ -146,17 +146,17 @@ export function CompanyNotesTimeline({
         </form>
 
         {activities.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-white/15 p-6 text-center text-sm text-muted-foreground">
+          <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
             Todavía no hay entradas. Escribe la primera reunión o nota arriba.
           </p>
         ) : (
-          <ol className="relative space-y-0 border-l border-white/15 pl-6">
+          <ol className="relative space-y-0 border-l border-border pl-6">
             {activities.map((a) => (
               <li key={a.id} className="relative pb-6 last:pb-0">
                 <span
-                  className={`absolute -left-[1.6rem] top-1.5 size-3 rounded-full ring-4 ring-[#0c1430] ${activityAccent(a.type)}`}
+                  className={`absolute -left-[1.6rem] top-1.5 size-3 rounded-full ring-4 ring-background ${activityAccent(a.type)}`}
                 />
-                <div className="rounded-xl border border-white/10 bg-[#0a1228]/70 p-4">
+                <div className="rounded-xl border border-border bg-card p-4">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -167,7 +167,7 @@ export function CompanyNotesTimeline({
                           {format(new Date(a.happened_at), "dd MMM yyyy · HH:mm")}
                         </span>
                         {a.contacts?.name ? (
-                          <span className="text-sm text-[#9aa6c4]">
+                          <span className="text-sm text-muted-foreground">
                             · {a.contacts.name}
                           </span>
                         ) : null}
@@ -184,7 +184,7 @@ export function CompanyNotesTimeline({
                     </Button>
                   </div>
                   {a.comment ? (
-                    <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-[#e8ecf8]">
+                    <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-foreground">
                       {a.comment}
                     </p>
                   ) : (

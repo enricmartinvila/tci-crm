@@ -88,18 +88,18 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#0c1430] via-[#0a1230] to-[#1a0a14] p-6 md:p-8">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 md:p-8">
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-10 -top-10 size-48 rounded-full bg-primary/20 blur-3xl"
+          className="pointer-events-none absolute -right-10 -top-10 size-48 rounded-full bg-primary/15 blur-3xl"
         />
-        <p className="text-sm font-semibold text-[#9aa6c4]">
+        <p className="text-sm font-semibold text-muted-foreground">
           The Cartel Insider
         </p>
-        <h1 className="mt-1 text-3xl font-extrabold text-white md:text-4xl">
+        <h1 className="mt-1 text-3xl font-extrabold text-foreground md:text-4xl">
           Sponsor Desk
         </h1>
-        <p className="mt-2 max-w-xl text-base text-[#9aa6c4]">
+        <p className="mt-2 max-w-xl text-base text-muted-foreground">
           Pipeline de sponsors, follow-ups y deals activos.
         </p>
       </div>
@@ -107,14 +107,14 @@ export default async function DashboardPage() {
       <div className="tci-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
           <Link key={card.title} href={card.href} className="tci-animate-in">
-            <Card className="tci-panel border-white/10 bg-card/70 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-red-950/20">
+            <Card className="tci-panel transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-medium text-muted-foreground">
                   {card.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-4xl font-extrabold tracking-tight text-white">
+                <p className="text-4xl font-extrabold tracking-tight text-foreground">
                   {card.value}
                 </p>
               </CardContent>
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="tci-panel border-white/10 bg-card/70">
+        <Card className="tci-panel">
           <CardHeader>
             <CardTitle className="text-base">Empresas por estado</CardTitle>
           </CardHeader>
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="tci-panel border-white/10 bg-card/70">
+        <Card className="tci-panel">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">Follow-ups hoy / overdue</CardTitle>
             <Link
@@ -222,7 +222,7 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <Card className="tci-panel border-white/10 bg-card/70">
+      <Card className="tci-panel">
         <CardHeader>
           <CardTitle className="text-base">Empresas prioritarias A+ / A</CardTitle>
         </CardHeader>

@@ -164,7 +164,7 @@ export function priorityBadgeClass(priority: string | null | undefined): string 
     case "B":
       return "bg-[#2b4a9b] text-white hover:bg-[#2b4a9b]";
     case "C":
-      return "bg-[#3d4a6b] text-[#c8d0e6] hover:bg-[#3d4a6b]";
+      return "bg-slate-200 text-slate-700 hover:bg-slate-200 dark:bg-[#3d4a6b] dark:text-[#c8d0e6] dark:hover:bg-[#3d4a6b]";
     default:
       return "bg-muted text-muted-foreground";
   }
@@ -176,7 +176,7 @@ export function stageBadgeClass(stage: string | null | undefined): string {
       return "bg-emerald-500 text-white hover:bg-emerald-500";
     case "Lost":
     case "Not Now":
-      return "bg-[#3d4a6b] text-[#c8d0e6] hover:bg-[#3d4a6b]";
+      return "bg-slate-200 text-slate-700 hover:bg-slate-200 dark:bg-[#3d4a6b] dark:text-[#c8d0e6] dark:hover:bg-[#3d4a6b]";
     case "Negotiating":
     case "Interested":
       return "bg-[#e11d2e] text-white hover:bg-[#e11d2e]";
@@ -186,8 +186,8 @@ export function stageBadgeClass(stage: string | null | undefined): string {
       return "bg-[#2b4a9b] text-white hover:bg-[#2b4a9b]";
     case "Ready to Contact":
     case "Media Kit Sent":
-      return "bg-[#152047] text-[#c8d0e6] hover:bg-[#152047]";
+      return "bg-slate-100 text-slate-700 hover:bg-slate-100 dark:bg-[#152047] dark:text-[#c8d0e6] dark:hover:bg-[#152047]";
     default:
-      return "bg-[#152047] text-[#c8d0e6] hover:bg-[#152047]";
+      return "bg-slate-100 text-slate-700 hover:bg-slate-100 dark:bg-[#152047] dark:text-[#c8d0e6] dark:hover:bg-[#152047]";
   }
 }

@@ -50,8 +50,49 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* The Cartel Insider — dark navy desk, white mark, red signal */
+/* Light — daytime readable, keep TCI red + navy accents */
 :root {
+  --background: #f4f6fb;
+  --foreground: #0b1224;
+  --card: #ffffff;
+  --card-foreground: #0b1224;
+  --popover: #ffffff;
+  --popover-foreground: #0b1224;
+  --primary: #d41022;
+  --primary-foreground: #ffffff;
+  --secondary: #e8eefc;
+  --secondary-foreground: #132047;
+  --muted: #eef2f9;
+  --muted-foreground: #5b6b8c;
+  --accent: #e8eefc;
+  --accent-foreground: #132047;
+  --destructive: #c51222;
+  --border: rgb(15 30 70 / 12%);
+  --input: rgb(15 30 70 / 14%);
+  --ring: #d41022;
+  --brand: #0a1440;
+  --brand-foreground: #ffffff;
+  --chart-1: #d41022;
+  --chart-2: #c9a116;
+  --chart-3: #1f7ea8;
+  --chart-4: #5b6b8c;
+  --chart-5: #0b1224;
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0b1224;
+  --sidebar-primary: #d41022;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef2f9;
+  --sidebar-accent-foreground: #0b1224;
+  --sidebar-border: rgb(15 30 70 / 10%);
+  --sidebar-ring: #d41022;
+  --page-glow-a: rgb(225 29 46 / 10%);
+  --page-glow-b: rgb(30 58 138 / 10%);
+  --page-base-from: #f7f8fc;
+  --page-base-to: #eef2f9;
+}
+
+.dark {
   --background: #060b1a;
   --foreground: #f4f6fb;
   --card: #0c1430;
@@ -77,7 +118,6 @@
   --chart-3: #4cc9f0;
   --chart-4: #9aa6c4;
   --chart-5: #ffffff;
-  --radius: 0.75rem;
   --sidebar: #050a16;
   --sidebar-foreground: #e8ecf8;
   --sidebar-primary: #e11d2e;
@@ -86,35 +126,10 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgb(255 255 255 / 8%);
   --sidebar-ring: #e11d2e;
-}
-
-.dark {
-  --background: #060b1a;
-  --foreground: #f4f6fb;
-  --card: #0c1430;
-  --card-foreground: #f4f6fb;
-  --popover: #0e1736;
-  --popover-foreground: #f4f6fb;
-  --primary: #e11d2e;
-  --primary-foreground: #ffffff;
-  --secondary: #152047;
-  --secondary-foreground: #e8ecf8;
-  --muted: #121b3a;
-  --muted-foreground: #9aa6c4;
-  --accent: #1a2754;
-  --accent-foreground: #f4f6fb;
-  --destructive: #ff4d5a;
-  --border: rgb(255 255 255 / 10%);
-  --input: rgb(255 255 255 / 12%);
-  --ring: #e11d2e;
-  --sidebar: #050a16;
-  --sidebar-foreground: #e8ecf8;
-  --sidebar-primary: #e11d2e;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #121b3a;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgb(255 255 255 / 8%);
-  --sidebar-ring: #e11d2e;
+  --page-glow-a: rgb(225 29 46 / 18%);
+  --page-glow-b: rgb(30 58 138 / 35%);
+  --page-base-from: #060b1a;
+  --page-base-to: #080f24;
 }
 
 @layer base {
@@ -127,9 +142,9 @@
   body {
     @apply bg-background text-foreground text-base leading-relaxed font-sans;
     background-image:
-      radial-gradient(ellipse 80% 50% at 0% -10%, rgb(225 29 46 / 18%), transparent),
-      radial-gradient(ellipse 60% 40% at 100% 0%, rgb(30 58 138 / 35%), transparent),
-      linear-gradient(180deg, #060b1a 0%, #080f24 100%);
+      radial-gradient(ellipse 80% 50% at 0% -10%, var(--page-glow-a), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, var(--page-glow-b), transparent),
+      linear-gradient(180deg, var(--page-base-from) 0%, var(--page-base-to) 100%);
     background-attachment: fixed;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
@@ -163,7 +178,7 @@
     box-shadow: 0 0 0 0 rgb(225 29 46 / 0%);
   }
   50% {
-    box-shadow: 0 0 24px 0 rgb(225 29 46 / 25%);
+    box-shadow: 0 0 24px 0 rgb(225 29 46 / 20%);
   }
 }
 
@@ -185,7 +200,7 @@
 }
 
 .tci-panel {
-  @apply rounded-xl border border-white/10 bg-card/80 shadow-[0_0_0_1px_rgb(255_255_255_/_4%)_inset] backdrop-blur-sm;
+  @apply rounded-xl border border-border bg-card/90 shadow-sm backdrop-blur-sm;
 }
 
 .tci-mark {
