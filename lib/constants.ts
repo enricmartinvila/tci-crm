@@ -31,14 +31,23 @@ export const ACTIVE_DEAL_STAGES: DealStage[] = [
 ];
 
 export const ACTIVITY_TYPES: { value: ActivityType; label: string }[] = [
+  { value: "note", label: "Nota" },
+  { value: "meeting", label: "Reunión" },
+  { value: "call", label: "Call" },
   { value: "email_sent", label: "Email sent" },
   { value: "linkedin_message", label: "LinkedIn message" },
   { value: "instagram_dm", label: "Instagram DM" },
   { value: "form_submitted", label: "Form submitted" },
   { value: "follow_up", label: "Follow-up" },
   { value: "reply", label: "Reply" },
-  { value: "call", label: "Call" },
-  { value: "note", label: "Note" },
+];
+
+export const NOTE_ACTIVITY_TYPES: ActivityType[] = [
+  "note",
+  "meeting",
+  "call",
+  "follow_up",
+  "reply",
 ];
 
 export const COMPANY_STATUSES = [

@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import type { Activity, Company, Contact, Deal } from "@/lib/types";
-import { ACTIVITY_TYPES } from "@/lib/constants";
 import { PriorityBadge, StageBadge, StatusBadge } from "@/components/badges";
 import { AddActivityDialog } from "@/components/add-activity-dialog";
 import { EditCompanyDialog } from "@/components/companies/edit-company-dialog";
+import { CompanyNotesTimeline } from "@/components/companies/company-notes-timeline";
 import {
   CreateContactDialog,
   CreateDealDialog,
@@ -14,10 +13,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-
-function activityLabel(type: string) {
-  return ACTIVITY_TYPES.find((t) => t.value === type)?.label || type;
-}
 
 function boolLabel(v: boolean | null | undefined) {
   if (v === true) return "Yes";
@@ -248,6 +243,13 @@ export default async function CompanyDetailPage({
         </div>
       </div>
 
+      <CompanyNotesTimeline
+        companyId={c.id}
+        contacts={contactList}
+        dealId={dealList[0]?.id}
+        activities={activityList}
+      />
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base">
@@ -346,43 +348,6 @@ export default async function CompanyDetailPage({
                 {deal.notes ? (
                   <p className="mt-2 text-muted-foreground">{deal.notes}</p>
                 ) : null}
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-base">
-            Activities ({activityList.length})
-          </CardTitle>
-          <AddActivityDialog
-            companyId={c.id}
-            contacts={contactList}
-            dealId={dealList[0]?.id}
-          />
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {activityList.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Sin actividades</p>
-          ) : (
-            activityList.map((a) => (
-              <div key={a.id} className="flex gap-3 border-b pb-3 last:border-0">
-                <div className="min-w-[110px] text-xs text-muted-foreground">
-                  {format(new Date(a.happened_at), "yyyy-MM-dd HH:mm")}
-                </div>
-                <div className="text-sm">
-                  <p className="font-medium">{activityLabel(a.type)}</p>
-                  {a.contacts?.name ? (
-                    <p className="text-xs text-muted-foreground">
-                      {a.contacts.name}
-                    </p>
-                  ) : null}
-                  {a.comment ? (
-                    <p className="mt-1 text-muted-foreground">{a.comment}</p>
-                  ) : null}
-                </div>
               </div>
             ))
           )}

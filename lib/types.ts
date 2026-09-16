@@ -21,6 +21,7 @@ export type ActivityType =
   | "follow_up"
   | "reply"
   | "call"
+  | "meeting"
   | "note";
 
 export type Company = {
