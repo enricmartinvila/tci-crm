@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Deal } from "@/lib/types";
 import { DealsViews } from "@/components/deals/deals-views";
 import { DealsFilters } from "@/components/deals/deals-filters";
+import { BackfillDealsButton } from "@/components/deals/backfill-deals-button";
 
 type SearchParams = Promise<{
   q?: string;
@@ -39,7 +40,13 @@ export default async function DealsPage({
     });
   else query = query.order("updated_at", { ascending: false });
 
-  const { data, error } = await query;
+  const [{ data, error }, { data: allCompanies }, { data: dealCompanyIds }] =
+    await Promise.all([
+      query,
+      supabase.from("companies").select("id"),
+      supabase.from("deals").select("company_id"),
+    ]);
+
   let deals = (data || []) as Deal[];
 
   if (params.q) {
@@ -56,16 +63,29 @@ export default async function DealsPage({
     });
   }
 
+  const withDeal = new Set(
+    (dealCompanyIds || []).map((d) => d.company_id).filter(Boolean)
+  );
+  const missingDeals = (allCompanies || []).filter(
+    (c) => !withDeal.has(c.id)
+  ).length;
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
-          Deals
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {deals.length} deal{deals.length === 1 ? "" : "s"}
-          {error ? ` · Error: ${error.message}` : ""}
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+            Deals
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {deals.length} deal{deals.length === 1 ? "" : "s"}
+            {missingDeals > 0
+              ? ` · ${missingDeals} empresa${missingDeals === 1 ? "" : "s"} sin deal`
+              : ""}
+            {error ? ` · Error: ${error.message}` : ""}
+          </p>
+        </div>
+        <BackfillDealsButton missingCount={missingDeals} />
       </div>
       <Suspense>
         <DealsFilters />

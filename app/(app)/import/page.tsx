@@ -188,9 +188,48 @@ export default function ImportPage() {
             inserted += count ?? chunk.length;
           }
         }
+        let dealsCreated = 0;
+        const [{ data: allCompanies }, { data: existingDeals }] =
+          await Promise.all([
+            supabase
+              .from("companies")
+              .select("id, name, status, priority, next_action, next_followup"),
+            supabase.from("deals").select("company_id"),
+          ]);
+        const withDeal = new Set(
+          (existingDeals || []).map((d) => d.company_id).filter(Boolean)
+        );
+        const missing = (allCompanies || []).filter((c) => !withDeal.has(c.id));
+        if (missing.length > 0) {
+          const dealPayloads = missing.map((c) => ({
+            user_id: user.id,
+            company_id: c.id,
+            name: c.name,
+            stage: c.status || "Researching",
+            priority: c.priority,
+            currency: "EUR",
+            next_action: c.next_action,
+            next_followup: c.next_followup,
+          }));
+          for (let i = 0; i < dealPayloads.length; i += 50) {
+            const chunk = dealPayloads.slice(i, i + 50);
+            const { error: dealErr } = await supabase
+              .from("deals")
+              .insert(chunk);
+            if (dealErr) {
+              console.error(dealErr);
+            } else {
+              dealsCreated += chunk.length;
+            }
+          }
+        }
+
         setResult(
           `Companies: ${inserted} insertadas/actualizadas` +
-            (errors ? `, ${errors} con error` : "")
+            (errors ? `, ${errors} con error` : "") +
+            (dealsCreated
+              ? ` · ${dealsCreated} deals creados para empresas sin deal`
+              : "")
         );
         toast.success("Importación de companies completada");
       }

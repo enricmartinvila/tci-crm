@@ -35,6 +35,41 @@ async function syncCompanyStatusFromDealStage(
     .eq("id", companyId);
 }
 
+type CompanyDealSeed = {
+  id: string;
+  name: string;
+  status?: string | null;
+  priority?: PriorityLevel | null;
+  next_action?: string | null;
+  next_followup?: string | null;
+};
+
+function defaultDealPayload(
+  userId: string,
+  company: CompanyDealSeed
+) {
+  const stage =
+    (statusToDealStage(company.status) as DealStage | null) || "Researching";
+  return {
+    user_id: userId,
+    company_id: company.id,
+    name: company.name,
+    stage,
+    priority: company.priority ?? null,
+    currency: "EUR",
+    next_action: company.next_action ?? null,
+    next_followup: company.next_followup ?? null,
+  };
+}
+
+async function insertDefaultDeal(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  company: CompanyDealSeed
+) {
+  return supabase.from("deals").insert(defaultDealPayload(userId, company));
+}
+
 function emptyToNull(v: FormDataEntryValue | null | undefined) {
   if (v === null || v === undefined) return null;
   const s = String(v).trim();
@@ -81,9 +116,22 @@ export async function createCompany(formData: FormData) {
     score: toInt(formData.get("score")),
   };
   if (!payload.name) return { error: "El nombre es obligatorio" };
-  const { error } = await supabase.from("companies").insert(payload);
+  const { data: company, error } = await supabase
+    .from("companies")
+    .insert(payload)
+    .select("id, name, status, priority, next_action, next_followup")
+    .single();
   if (error) return { error: error.message };
+  if (company) {
+    const { error: dealError } = await insertDefaultDeal(
+      supabase,
+      user.id,
+      company
+    );
+    if (dealError) return { error: dealError.message };
+  }
   revalidatePath("/companies");
+  revalidatePath("/deals");
   revalidatePath("/");
   return { error: null };
 }
@@ -277,6 +325,45 @@ export async function createDeal(formData: FormData) {
   revalidatePath(`/companies/${company_id}`);
   revalidatePath("/");
   return { error: null };
+}
+
+/** Create one default deal for every company that has none. */
+export async function backfillMissingDeals() {
+  const { supabase, user } = await requireUser();
+
+  const [{ data: companies, error: cErr }, { data: deals, error: dErr }] =
+    await Promise.all([
+      supabase
+        .from("companies")
+        .select("id, name, status, priority, next_action, next_followup"),
+      supabase.from("deals").select("company_id"),
+    ]);
+
+  if (cErr) return { error: cErr.message, created: 0 };
+  if (dErr) return { error: dErr.message, created: 0 };
+
+  const withDeal = new Set(
+    (deals || []).map((d) => d.company_id).filter(Boolean)
+  );
+  const missing = (companies || []).filter((c) => !withDeal.has(c.id));
+
+  if (missing.length === 0) {
+    return { error: null, created: 0 };
+  }
+
+  const payloads = missing.map((c) => defaultDealPayload(user.id, c));
+  let created = 0;
+  for (let i = 0; i < payloads.length; i += 50) {
+    const chunk = payloads.slice(i, i + 50);
+    const { error } = await supabase.from("deals").insert(chunk);
+    if (error) return { error: error.message, created };
+    created += chunk.length;
+  }
+
+  revalidatePath("/deals");
+  revalidatePath("/companies");
+  revalidatePath("/");
+  return { error: null, created };
 }
 
 export async function updateDeal(id: string, formData: FormData) {
