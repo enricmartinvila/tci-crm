@@ -44,9 +44,7 @@ export const ACTIVITY_TYPES: { value: ActivityType; label: string }[] = [
 export const COMPANY_STATUSES = [
   "Not contacted",
   "Researching",
-  "Ready to Contact",
   "Contacted",
-  "Waiting Reply",
   "Follow-up",
   "Interested",
   "Negotiating",
@@ -70,6 +68,14 @@ export const STAGE_IMPORT_MAP: Record<string, DealStage> = {
   "Not Now": "Not Now",
   Lost: "Lost",
 };
+
+/** Map company status → deal stage */
+export function statusToDealStage(
+  status: string | null | undefined
+): DealStage | null {
+  if (!status) return null;
+  return STAGE_IMPORT_MAP[status] ?? null;
+}
 
 /** Normalize legacy stages removed from the UI pipeline */
 export function normalizeDealStage(stage: string | null | undefined): DealStage {

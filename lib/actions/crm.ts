@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { statusToDealStage } from "@/lib/constants";
 import type { ActivityType, DealStage, PriorityLevel } from "@/lib/types";
 
 async function requireUser() {
@@ -11,6 +12,27 @@ async function requireUser() {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("No autenticado");
   return { supabase, user };
+}
+
+async function syncDealsStageFromCompanyStatus(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  companyId: string,
+  status: string | null | undefined
+) {
+  const stage = statusToDealStage(status);
+  if (!stage) return;
+  await supabase.from("deals").update({ stage }).eq("company_id", companyId);
+}
+
+async function syncCompanyStatusFromDealStage(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  companyId: string,
+  stage: DealStage
+) {
+  await supabase
+    .from("companies")
+    .update({ status: stage })
+    .eq("id", companyId);
 }
 
 function emptyToNull(v: FormDataEntryValue | null | undefined) {
@@ -107,8 +129,10 @@ export async function updateCompany(id: string, formData: FormData) {
     .update(payload)
     .eq("id", id);
   if (error) return { error: error.message };
+  await syncDealsStageFromCompanyStatus(supabase, id, payload.status);
   revalidatePath("/companies");
   revalidatePath(`/companies/${id}`);
+  revalidatePath("/deals");
   revalidatePath("/");
   revalidatePath("/follow-ups");
   return { error: null };
@@ -120,13 +144,22 @@ export async function updateCompanyField(
   value: string | number | boolean | null
 ) {
   const { supabase } = await requireUser();
+  const nextValue = value === "" ? null : value;
   const { error } = await supabase
     .from("companies")
-    .update({ [field]: value === "" ? null : value })
+    .update({ [field]: nextValue })
     .eq("id", id);
   if (error) return { error: error.message };
+  if (field === "status") {
+    await syncDealsStageFromCompanyStatus(
+      supabase,
+      id,
+      typeof nextValue === "string" ? nextValue : null
+    );
+  }
   revalidatePath("/companies");
   revalidatePath(`/companies/${id}`);
+  revalidatePath("/deals");
   revalidatePath("/");
   return { error: null };
 }
@@ -267,8 +300,12 @@ export async function updateDeal(id: string, formData: FormData) {
   };
   const { error } = await supabase.from("deals").update(payload).eq("id", id);
   if (error) return { error: error.message };
+  if (company_id) {
+    await syncCompanyStatusFromDealStage(supabase, company_id, payload.stage);
+  }
   revalidatePath("/deals");
   revalidatePath(`/companies/${company_id}`);
+  revalidatePath("/companies");
   revalidatePath("/");
   revalidatePath("/follow-ups");
   return { error: null };
@@ -276,9 +313,22 @@ export async function updateDeal(id: string, formData: FormData) {
 
 export async function updateDealStage(id: string, stage: DealStage) {
   const { supabase } = await requireUser();
+  const { data: deal, error: fetchError } = await supabase
+    .from("deals")
+    .select("company_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (fetchError) return { error: fetchError.message };
+
   const { error } = await supabase.from("deals").update({ stage }).eq("id", id);
   if (error) return { error: error.message };
+
+  if (deal?.company_id) {
+    await syncCompanyStatusFromDealStage(supabase, deal.company_id, stage);
+    revalidatePath(`/companies/${deal.company_id}`);
+  }
   revalidatePath("/deals");
+  revalidatePath("/companies");
   revalidatePath("/");
   return { error: null };
 }
