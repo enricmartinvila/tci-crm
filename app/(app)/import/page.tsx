@@ -54,6 +54,15 @@ function parseNum(v: string | undefined) {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Fit scores in DB are smallint 1–5 (or null). Out-of-range → null. */
+function parseFitScore(v: string | undefined) {
+  const n = parseNum(v);
+  if (n === null) return null;
+  const rounded = Math.round(n);
+  if (rounded < 1 || rounded > 5) return null;
+  return rounded;
+}
+
 function parseDate(v: string | undefined) {
   if (!v || !String(v).trim()) return null;
   return String(v).trim().slice(0, 10);
@@ -144,11 +153,11 @@ export default function ImportPage() {
               website: getMapped(row, "website")?.trim() || null,
               category: getMapped(row, "category")?.trim() || null,
               priority: mapPriority(getMapped(row, "priority")),
-              youtube_fit: parseNum(getMapped(row, "youtube_fit")),
-              instagram_fit: parseNum(getMapped(row, "instagram_fit")),
-              creator_spend: parseNum(getMapped(row, "creator_spend")),
-              thematic_fit: parseNum(getMapped(row, "thematic_fit")),
-              contactability: parseNum(getMapped(row, "contactability")),
+              youtube_fit: parseFitScore(getMapped(row, "youtube_fit")),
+              instagram_fit: parseFitScore(getMapped(row, "instagram_fit")),
+              creator_spend: parseFitScore(getMapped(row, "creator_spend")),
+              thematic_fit: parseFitScore(getMapped(row, "thematic_fit")),
+              contactability: parseFitScore(getMapped(row, "contactability")),
               score: parseNum(getMapped(row, "score")),
               evidence: getMapped(row, "evidence")?.trim() || null,
               comparable_channels:
@@ -184,6 +193,7 @@ export default function ImportPage() {
           if (error) {
             errors += chunk.length;
             console.error(error);
+            toast.error(error.message);
           } else {
             inserted += count ?? chunk.length;
           }
