@@ -4,6 +4,23 @@ export const PRIORITIES: PriorityLevel[] = ["A+", "A", "B", "C"];
 
 export const DEAL_STAGES: DealStage[] = [
   "Researching",
+  "Contacted",
+  "Follow-up",
+  "Interested",
+  "Negotiating",
+  "Sponsor Won",
+  "Not Now",
+  "Lost",
+];
+
+export const CLOSED_DEAL_STAGES: DealStage[] = [
+  "Sponsor Won",
+  "Not Now",
+  "Lost",
+];
+
+export const ACTIVE_DEAL_STAGES: DealStage[] = [
+  "Researching",
   "Ready to Contact",
   "Contacted",
   "Waiting Reply",
@@ -11,14 +28,7 @@ export const DEAL_STAGES: DealStage[] = [
   "Interested",
   "Media Kit Sent",
   "Negotiating",
-  "Sponsor Won",
-  "Not Now",
-  "Lost",
 ];
-
-export const ACTIVE_DEAL_STAGES: DealStage[] = DEAL_STAGES.filter(
-  (s) => !["Sponsor Won", "Not Now", "Lost"].includes(s)
-);
 
 export const ACTIVITY_TYPES: { value: ActivityType; label: string }[] = [
   { value: "email_sent", label: "Email sent" },
@@ -49,17 +59,23 @@ export const COMPANY_STATUSES = [
 export const STAGE_IMPORT_MAP: Record<string, DealStage> = {
   "Not contacted": "Researching",
   Researching: "Researching",
-  "Ready to Contact": "Ready to Contact",
+  "Ready to Contact": "Contacted",
   Contacted: "Contacted",
-  "Waiting Reply": "Waiting Reply",
+  "Waiting Reply": "Follow-up",
   "Follow-up": "Follow-up",
   Interested: "Interested",
-  "Media Kit Sent": "Media Kit Sent",
+  "Media Kit Sent": "Interested",
   Negotiating: "Negotiating",
   "Sponsor Won": "Sponsor Won",
   "Not Now": "Not Now",
   Lost: "Lost",
 };
+
+/** Normalize legacy stages removed from the UI pipeline */
+export function normalizeDealStage(stage: string | null | undefined): DealStage {
+  if (!stage) return "Researching";
+  return STAGE_IMPORT_MAP[stage] || (stage as DealStage);
+}
 
 export const COMPANY_CSV_DEFAULTS: Record<string, string> = {
   name: "Company Name",
@@ -152,6 +168,9 @@ export function stageBadgeClass(stage: string | null | undefined): string {
     case "Waiting Reply":
     case "Follow-up":
       return "bg-[#2b4a9b] text-white hover:bg-[#2b4a9b]";
+    case "Ready to Contact":
+    case "Media Kit Sent":
+      return "bg-[#152047] text-[#c8d0e6] hover:bg-[#152047]";
     default:
       return "bg-[#152047] text-[#c8d0e6] hover:bg-[#152047]";
   }

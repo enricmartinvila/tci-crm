@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { updateDealStage } from "@/lib/actions/crm";
-import { DEAL_STAGES } from "@/lib/constants";
+import { DEAL_STAGES, normalizeDealStage } from "@/lib/constants";
 import type { Deal, DealStage } from "@/lib/types";
 import { PriorityBadge, StageBadge } from "@/components/badges";
 import { Button } from "@/components/ui/button";
@@ -81,10 +81,10 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
-                      <StageBadge stage={d.stage} />
+                      <StageBadge stage={normalizeDealStage(d.stage)} />
                       <NativeSelect
-                        className="h-7 min-w-[150px]"
-                        defaultValue={d.stage}
+                        className="h-10 min-w-[160px]"
+                        defaultValue={normalizeDealStage(d.stage)}
                         onChange={(e) =>
                           moveDeal(d.id, e.target.value as DealStage)
                         }
@@ -115,7 +115,9 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
       ) : (
         <div className="flex gap-3 overflow-x-auto pb-4">
           {DEAL_STAGES.map((stage) => {
-            const column = deals.filter((d) => d.stage === stage);
+            const column = deals.filter(
+              (d) => normalizeDealStage(d.stage) === stage
+            );
             return (
               <div
                 key={stage}
