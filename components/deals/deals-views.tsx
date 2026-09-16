@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { updateDealStage } from "@/lib/actions/crm";
 import { DEAL_STAGES, normalizeDealStage } from "@/lib/constants";
@@ -21,9 +21,7 @@ import {
 export function DealsViews({ deals }: { deals: Deal[] }) {
   const [view, setView] = useState<"table" | "kanban">("kanban");
   const [localDeals, setLocalDeals] = useState(deals);
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [dropTarget, setDropTarget] = useState<DealStage | null>(null);
-  const [, startTransition] = useTransition();
+  const draggingIdRef = useRef<string | null>(null);
   const pendingIds = useRef(new Set<string>());
   const rollbackStages = useRef(new Map<string, DealStage>());
 
@@ -49,10 +47,9 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
     setLocalDeals((prev) =>
       prev.map((d) => (d.id === id ? { ...d, stage } : d))
     );
-    setDraggingId(null);
-    setDropTarget(null);
 
-    startTransition(async () => {
+    // Fire request outside of transitions so optimistic UI is not deferred
+    void (async () => {
       const result = await updateDealStage(id, stage);
       pendingIds.current.delete(id);
       if (result.error) {
@@ -63,7 +60,7 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
         toast.error(result.error);
       }
       rollbackStages.current.delete(id);
-    });
+    })();
   }
 
   return (
@@ -157,24 +154,33 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
             const column = localDeals.filter(
               (d) => normalizeDealStage(d.stage) === stage
             );
-            const isTarget = dropTarget === stage;
             return (
               <div
                 key={stage}
-                className={`flex w-64 shrink-0 flex-col rounded-lg border bg-muted/30 transition-colors ${
-                  isTarget ? "border-primary bg-primary/5" : ""
-                }`}
+                data-stage={stage}
+                className="flex w-64 shrink-0 flex-col rounded-lg border bg-muted/30 transition-colors data-[drag-over=true]:border-primary data-[drag-over=true]:bg-primary/5"
                 onDragOver={(e) => {
                   e.preventDefault();
                   e.dataTransfer.dropEffect = "move";
-                  if (dropTarget !== stage) setDropTarget(stage);
+                  const el = e.currentTarget;
+                  if (el.dataset.dragOver !== "true") {
+                    el.dataset.dragOver = "true";
+                  }
                 }}
-                onDragLeave={() => {
-                  if (dropTarget === stage) setDropTarget(null);
+                onDragLeave={(e) => {
+                  const el = e.currentTarget;
+                  // Ignore leave events when moving over children
+                  if (el.contains(e.relatedTarget as Node)) return;
+                  el.dataset.dragOver = "false";
                 }}
                 onDrop={(e) => {
                   e.preventDefault();
-                  const id = e.dataTransfer.getData("text/deal-id");
+                  e.currentTarget.dataset.dragOver = "false";
+                  const id =
+                    draggingIdRef.current ||
+                    e.dataTransfer.getData("text/plain") ||
+                    e.dataTransfer.getData("text/deal-id");
+                  draggingIdRef.current = null;
                   if (id) moveDeal(id, stage);
                 }}
               >
@@ -190,17 +196,23 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
                       key={d.id}
                       draggable
                       onDragStart={(e) => {
+                        draggingIdRef.current = d.id;
+                        e.dataTransfer.setData("text/plain", d.id);
                         e.dataTransfer.setData("text/deal-id", d.id);
                         e.dataTransfer.effectAllowed = "move";
-                        setDraggingId(d.id);
+                        // Visual only — no React setState (that cancels the drag)
+                        e.currentTarget.style.opacity = "0.4";
                       }}
-                      onDragEnd={() => {
-                        setDraggingId(null);
-                        setDropTarget(null);
+                      onDragEnd={(e) => {
+                        draggingIdRef.current = null;
+                        e.currentTarget.style.opacity = "";
+                        document
+                          .querySelectorAll("[data-drag-over='true']")
+                          .forEach((node) => {
+                            (node as HTMLElement).dataset.dragOver = "false";
+                          });
                       }}
-                      className={`cursor-grab rounded-md border bg-background p-3 shadow-sm transition-opacity active:cursor-grabbing ${
-                        draggingId === d.id ? "opacity-40" : ""
-                      }`}
+                      className="cursor-grab rounded-md border bg-background p-3 shadow-sm active:cursor-grabbing"
                     >
                       <p className="text-sm font-medium leading-snug">
                         {d.name}
@@ -211,6 +223,7 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
                           className="mt-1 block text-xs text-muted-foreground hover:underline"
                           onClick={(e) => e.stopPropagation()}
                           draggable={false}
+                          onDragStart={(e) => e.preventDefault()}
                         >
                           {d.companies.name}
                         </Link>
