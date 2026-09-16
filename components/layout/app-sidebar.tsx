@@ -46,14 +46,14 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             className={cn(
               "group flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium transition-all",
               active
-                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                ? "bg-brand text-brand-foreground shadow-md shadow-brand/25"
                 : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
             )}
           >
             <Icon
               className={cn(
                 "size-5 transition-transform group-hover:scale-105",
-                active ? "text-primary-foreground" : "text-muted-foreground"
+                active ? "text-brand-foreground" : "text-muted-foreground"
               )}
             />
             {label}
