@@ -11,7 +11,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,19 +33,20 @@ export function CreateCompanyDialog() {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button className="gap-1" />}>
+    <>
+      <Button type="button" className="gap-1.5" onClick={() => setOpen(true)}>
         <Plus className="size-4" />
         Nueva empresa
-      </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Nueva empresa</DialogTitle>
-        </DialogHeader>
-        <form action={onSubmit} className="grid gap-3 sm:grid-cols-2">
-          <Field label="Nombre" className="sm:col-span-2">
-            <Input name="name" required />
-          </Field>
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Nueva empresa</DialogTitle>
+          </DialogHeader>
+          <form action={onSubmit} className="grid gap-3 sm:grid-cols-2">
+            <Field label="Nombre" className="sm:col-span-2">
+              <Input name="name" required />
+            </Field>
           <Field label="Website">
             <Input name="website" type="url" placeholder="https://" />
           </Field>
@@ -97,6 +97,7 @@ export function CreateCompanyDialog() {
           </Button>
         </form>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+    </>
   );
 }

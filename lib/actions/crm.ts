@@ -300,6 +300,7 @@ export async function createActivity(formData: FormData) {
   const deal_id = emptyToNull(formData.get("deal_id"));
   const happened_at =
     emptyToNull(formData.get("happened_at")) || new Date().toISOString();
+  const next_followup = emptyToNull(formData.get("next_followup"));
   const payload = {
     user_id: user.id,
     company_id,
@@ -312,8 +313,17 @@ export async function createActivity(formData: FormData) {
   if (!company_id) return { error: "Empresa obligatoria" };
   const { error } = await supabase.from("activities").insert(payload);
   if (error) return { error: error.message };
+
+  if (next_followup) {
+    await supabase
+      .from("companies")
+      .update({ next_followup })
+      .eq("id", company_id);
+  }
+
   revalidatePath(`/companies/${company_id}`);
   revalidatePath("/");
+  revalidatePath("/follow-ups");
   return { error: null };
 }
 

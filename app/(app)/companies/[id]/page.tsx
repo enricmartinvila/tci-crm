@@ -353,10 +353,15 @@ export default async function CompanyDetailPage({
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base">
             Activities ({activityList.length})
           </CardTitle>
+          <AddActivityDialog
+            companyId={c.id}
+            contacts={contactList}
+            dealId={dealList[0]?.id}
+          />
         </CardHeader>
         <CardContent className="space-y-3">
           {activityList.length === 0 ? (

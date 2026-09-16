@@ -12,7 +12,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,19 +40,25 @@ export function EditCompanyDialog({ company }: { company: Company }) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" size="sm" className="gap-1" />}>
-        <Pencil className="size-3.5" />
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        className="gap-1.5"
+        onClick={() => setOpen(true)}
+      >
+        <Pencil className="size-4" />
         Editar
-      </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Editar {company.name}</DialogTitle>
-        </DialogHeader>
-        <form action={onSubmit} className="grid gap-3 sm:grid-cols-2">
-          <Field label="Nombre" className="sm:col-span-2">
-            <Input name="name" defaultValue={company.name} required />
-          </Field>
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Editar {company.name}</DialogTitle>
+          </DialogHeader>
+          <form action={onSubmit} className="grid gap-3 sm:grid-cols-2">
+            <Field label="Nombre" className="sm:col-span-2">
+              <Input name="name" defaultValue={company.name} required />
+            </Field>
           <Field label="Website">
             <Input name="website" defaultValue={company.website || ""} />
           </Field>
@@ -216,6 +221,7 @@ export function EditCompanyDialog({ company }: { company: Company }) {
           </Button>
         </form>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+    </>
   );
 }

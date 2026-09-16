@@ -12,7 +12,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,10 +21,14 @@ export function AddActivityDialog({
   companyId,
   contacts,
   dealId,
+  label = "Add activity",
+  variant = "default",
 }: {
   companyId: string;
   contacts: Pick<Contact, "id" | "name">[];
   dealId?: string | null;
+  label?: string;
+  variant?: "default" | "outline";
 }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -45,52 +48,61 @@ export function AddActivityDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={<Button size="sm" className="gap-1" />}
+    <>
+      <Button
+        type="button"
+        size="default"
+        variant={variant}
+        className="gap-1.5"
+        onClick={() => setOpen(true)}
       >
         <Plus className="size-4" />
-        Add activity
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Nueva actividad</DialogTitle>
-        </DialogHeader>
-        <form action={onSubmit} className="flex flex-col gap-3">
-          <Field label="Tipo">
-            <NativeSelect name="type" defaultValue="note" required>
-              {ACTIVITY_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </NativeSelect>
-          </Field>
-          <Field label="Fecha">
-            <Input
-              name="happened_at"
-              type="datetime-local"
-              defaultValue={new Date().toISOString().slice(0, 16)}
-            />
-          </Field>
-          <Field label="Contacto (opcional)">
-            <NativeSelect name="contact_id" defaultValue="">
-              <option value="">—</option>
-              {contacts.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </NativeSelect>
-          </Field>
-          <Field label="Comentario">
-            <Textarea name="comment" rows={3} />
-          </Field>
-          <Button type="submit" disabled={pending}>
-            {pending ? "Guardando…" : "Guardar"}
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+        {label}
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nueva actividad</DialogTitle>
+          </DialogHeader>
+          <form action={onSubmit} className="flex flex-col gap-3">
+            <Field label="Tipo">
+              <NativeSelect name="type" defaultValue="follow_up" required>
+                {ACTIVITY_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </NativeSelect>
+            </Field>
+            <Field label="Fecha">
+              <Input
+                name="happened_at"
+                type="datetime-local"
+                defaultValue={new Date().toISOString().slice(0, 16)}
+              />
+            </Field>
+            <Field label="Contacto (opcional)">
+              <NativeSelect name="contact_id" defaultValue="">
+                <option value="">—</option>
+                {contacts.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </NativeSelect>
+            </Field>
+            <Field label="Comentario">
+              <Textarea name="comment" rows={3} />
+            </Field>
+            <Field label="Próximo follow-up (opcional)">
+              <Input name="next_followup" type="date" />
+            </Field>
+            <Button type="submit" disabled={pending}>
+              {pending ? "Guardando…" : "Guardar"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
