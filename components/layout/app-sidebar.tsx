@@ -117,16 +117,31 @@ export function AppSidebar({ email }: { email?: string | null }) {
       <aside className="hidden w-72 shrink-0 border-r border-sidebar-border bg-sidebar md:block">
         {sidebarBody}
       </aside>
-      <div className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/90 px-4 py-3.5 backdrop-blur-md md:hidden">
+      <div className="sticky top-0 z-20 flex w-full items-center gap-3 border-b border-border bg-background/95 px-3 py-3 backdrop-blur-md md:hidden">
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger render={<Button variant="outline" size="icon" />}>
+          <SheetTrigger
+            render={
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-11 shrink-0"
+                aria-label="Abrir menú"
+              />
+            }
+          >
             <Menu className="size-5" />
           </SheetTrigger>
-          <SheetContent side="left" className="w-80 border-border p-0">
+          <SheetContent
+            side="left"
+            className="w-[min(100vw-2rem,20rem)] border-border p-0"
+            showCloseButton={false}
+          >
             {sidebarBody}
           </SheetContent>
         </Sheet>
-        <BrandWordmark subtitle="CRM" />
+        <div className="min-w-0 flex-1">
+          <BrandWordmark subtitle="CRM" />
+        </div>
       </div>
     </>
   );

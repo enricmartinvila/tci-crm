@@ -146,42 +146,72 @@ function FollowupTable({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Fecha</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Ítem</TableHead>
-            <TableHead>Empresa</TableHead>
-            <TableHead>Priority</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((r) => (
-            <TableRow key={`${r.kind}-${r.id}`}>
-              <TableCell>
-                <span className={r.overdue ? "font-medium text-destructive" : ""}>
-                  {r.date}
-                </span>
-              </TableCell>
-              <TableCell className="capitalize">{r.kind}</TableCell>
-              <TableCell className="font-medium">{r.title}</TableCell>
-              <TableCell>
-                <Link
-                  href={`/companies/${r.companyId}`}
-                  className="hover:underline"
-                >
-                  {r.companyName}
-                </Link>
-              </TableCell>
-              <TableCell>
-                <PriorityBadge priority={r.priority} />
-              </TableCell>
+    <>
+      <div className="space-y-2 md:hidden">
+        {rows.map((r) => (
+          <Link
+            key={`${r.kind}-${r.id}`}
+            href={`/companies/${r.companyId}`}
+            className="block space-y-1 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <p className="min-w-0 font-medium text-foreground">{r.title}</p>
+              <span
+                className={`shrink-0 text-sm ${
+                  r.overdue ? "font-medium text-destructive" : "text-muted-foreground"
+                }`}
+              >
+                {r.date}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <span className="capitalize">{r.kind}</span>
+              <span>· {r.companyName}</span>
+              <PriorityBadge priority={r.priority} />
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Fecha</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Ítem</TableHead>
+              <TableHead>Empresa</TableHead>
+              <TableHead>Priority</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => (
+              <TableRow key={`${r.kind}-${r.id}`}>
+                <TableCell>
+                  <span
+                    className={r.overdue ? "font-medium text-destructive" : ""}
+                  >
+                    {r.date}
+                  </span>
+                </TableCell>
+                <TableCell className="capitalize">{r.kind}</TableCell>
+                <TableCell className="font-medium">{r.title}</TableCell>
+                <TableCell>
+                  <Link
+                    href={`/companies/${r.companyId}`}
+                    className="hover:underline"
+                  >
+                    {r.companyName}
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <PriorityBadge priority={r.priority} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   );
 }

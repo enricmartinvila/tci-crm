@@ -86,7 +86,7 @@ export default async function CompanyDetailPage({
               ← Companies
             </Link>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
             {c.name}
           </h1>
           <div className="flex flex-wrap items-center gap-2">
@@ -102,7 +102,7 @@ export default async function CompanyDetailPage({
               href={c.website}
               target="_blank"
               rel="noreferrer"
-              className="text-sm text-blue-600 hover:underline"
+              className="block break-all text-sm text-brand hover:underline"
             >
               {c.website}
             </a>
@@ -199,7 +199,7 @@ export default async function CompanyDetailPage({
                     href={c.evidence_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="break-all text-brand hover:underline"
                   >
                     {c.evidence_url}
                   </a>
@@ -232,9 +232,12 @@ export default async function CompanyDetailPage({
                 <p className="text-muted-foreground">Sin follow-ups</p>
               ) : (
                 followUps.map((f) => (
-                  <div key={`${f.label}-${f.date}`} className="flex justify-between gap-2">
-                    <span>{f.label}</span>
-                    <span className="text-muted-foreground">{f.date}</span>
+                  <div
+                    key={`${f.label}-${f.date}`}
+                    className="flex justify-between gap-2"
+                  >
+                    <span className="min-w-0 truncate">{f.label}</span>
+                    <span className="shrink-0 text-muted-foreground">{f.date}</span>
                   </div>
                 ))
               )}
@@ -251,7 +254,7 @@ export default async function CompanyDetailPage({
       />
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
           <CardTitle className="text-base">
             Contacts ({contactList.length})
           </CardTitle>
@@ -320,7 +323,7 @@ export default async function CompanyDetailPage({
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
           <CardTitle className="text-base">Deals ({dealList.length})</CardTitle>
           <CreateDealDialog
             companyId={c.id}

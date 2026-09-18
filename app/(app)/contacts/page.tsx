@@ -59,7 +59,59 @@ export default async function ContactsPage({
       <Suspense>
         <ContactsFilters />
       </Suspense>
-      <div className="overflow-x-auto rounded-lg border">
+
+      <div className="space-y-3 md:hidden">
+        {contacts.length === 0 ? (
+          <p className="text-center text-sm text-muted-foreground">Sin contactos</p>
+        ) : (
+          contacts.map((c) => (
+            <div
+              key={c.id}
+              className="space-y-2 rounded-xl border border-border bg-card p-4"
+            >
+              <div>
+                <p className="font-semibold text-foreground">{c.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {c.job_title || "Sin cargo"}
+                </p>
+              </div>
+              {c.companies ? (
+                <Link
+                  href={`/companies/${c.companies.id}`}
+                  className="block text-sm text-brand hover:underline"
+                >
+                  {c.companies.name}
+                </Link>
+              ) : null}
+              <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                {c.contact_rank != null ? <span>Rank {c.contact_rank}</span> : null}
+                {c.outreach_status ? <Badge variant="outline">{c.outreach_status}</Badge> : null}
+                {c.is_placeholder ? <Badge variant="outline">Placeholder</Badge> : null}
+                {c.next_followup ? <span>{c.next_followup}</span> : null}
+              </div>
+              <div className="flex flex-wrap gap-3 text-sm">
+                {c.email ? (
+                  <a href={`mailto:${c.email}`} className="break-all text-brand hover:underline">
+                    {c.email}
+                  </a>
+                ) : null}
+                {c.linkedin_url ? (
+                  <a
+                    href={c.linkedin_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-brand hover:underline"
+                  >
+                    LinkedIn
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-lg border md:block">
         <Table>
           <TableHeader>
             <TableRow>

@@ -47,7 +47,6 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
       prev.map((d) => (d.id === id ? { ...d, stage } : d))
     );
 
-    // Fire request outside of transitions so optimistic UI is not deferred
     void (async () => {
       const result = await updateDealStage(id, stage);
       pendingIds.current.delete(id);
@@ -68,7 +67,7 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
         <button
           type="button"
           onClick={() => setView("kanban")}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+          className={`min-h-10 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
             view === "kanban"
               ? "bg-brand text-brand-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground"
@@ -79,7 +78,7 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
         <button
           type="button"
           onClick={() => setView("table")}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+          className={`min-h-10 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
             view === "table"
               ? "bg-brand text-brand-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground"
@@ -90,73 +89,133 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
       </div>
 
       {view === "table" ? (
-        <div className="overflow-x-auto rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Deal</TableHead>
-                <TableHead>Empresa</TableHead>
-                <TableHead>Stage</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead>Next action</TableHead>
-                <TableHead>Follow-up</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {localDeals.map((d) => {
-                const stage = normalizeDealStage(d.stage) as DealStage;
-                return (
-                  <TableRow key={d.id}>
-                    <TableCell className="font-medium">{d.name}</TableCell>
-                    <TableCell>
-                      {d.companies ? (
-                        <Link
-                          href={`/companies/${d.companies.id}`}
-                          className="hover:underline"
-                        >
-                          {d.companies.name}
-                        </Link>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <StageBadge stage={stage} />
-                        <NativeSelect
-                          className="h-10 min-w-[160px]"
-                          value={stage}
-                          onChange={(e) =>
-                            moveDeal(d.id, e.target.value as DealStage)
-                          }
-                        >
-                          {DEAL_STAGES.map((s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          ))}
-                        </NativeSelect>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <PriorityBadge priority={d.priority} />
-                    </TableCell>
-                    <TableCell>
-                      {d.value != null ? `${d.value} ${d.currency}` : "—"}
-                    </TableCell>
-                    <TableCell className="max-w-[200px] truncate">
-                      {d.next_action || "—"}
-                    </TableCell>
-                    <TableCell>{d.next_followup || "—"}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+        <>
+          {/* Mobile cards */}
+          <div className="space-y-3 md:hidden">
+            {localDeals.map((d) => {
+              const stage = normalizeDealStage(d.stage) as DealStage;
+              return (
+                <div
+                  key={d.id}
+                  className="space-y-3 rounded-xl border border-border bg-card p-4"
+                >
+                  <div>
+                    <p className="font-semibold text-foreground">{d.name}</p>
+                    {d.companies ? (
+                      <Link
+                        href={`/companies/${d.companies.id}`}
+                        className="mt-0.5 block text-sm text-muted-foreground hover:underline"
+                      >
+                        {d.companies.name}
+                      </Link>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <PriorityBadge priority={d.priority} />
+                    {d.value != null ? (
+                      <span className="text-sm text-muted-foreground">
+                        {d.value} {d.currency}
+                      </span>
+                    ) : null}
+                    {d.next_followup ? (
+                      <span className="text-sm text-muted-foreground">
+                        Follow-up {d.next_followup}
+                      </span>
+                    ) : null}
+                  </div>
+                  {d.next_action ? (
+                    <p className="text-sm text-muted-foreground">{d.next_action}</p>
+                  ) : null}
+                  <NativeSelect
+                    className="h-11 w-full"
+                    value={stage}
+                    onChange={(e) =>
+                      moveDeal(d.id, e.target.value as DealStage)
+                    }
+                  >
+                    {DEAL_STAGES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </div>
+              );
+            })}
+            {localDeals.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Sin deals</p>
+            ) : null}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden overflow-x-auto rounded-lg border md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Deal</TableHead>
+                  <TableHead>Empresa</TableHead>
+                  <TableHead>Stage</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Value</TableHead>
+                  <TableHead>Next action</TableHead>
+                  <TableHead>Follow-up</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {localDeals.map((d) => {
+                  const stage = normalizeDealStage(d.stage) as DealStage;
+                  return (
+                    <TableRow key={d.id}>
+                      <TableCell className="font-medium">{d.name}</TableCell>
+                      <TableCell>
+                        {d.companies ? (
+                          <Link
+                            href={`/companies/${d.companies.id}`}
+                            className="hover:underline"
+                          >
+                            {d.companies.name}
+                          </Link>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <StageBadge stage={stage} />
+                          <NativeSelect
+                            className="h-10 min-w-[160px]"
+                            value={stage}
+                            onChange={(e) =>
+                              moveDeal(d.id, e.target.value as DealStage)
+                            }
+                          >
+                            {DEAL_STAGES.map((s) => (
+                              <option key={s} value={s}>
+                                {s}
+                              </option>
+                            ))}
+                          </NativeSelect>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <PriorityBadge priority={d.priority} />
+                      </TableCell>
+                      <TableCell>
+                        {d.value != null ? `${d.value} ${d.currency}` : "—"}
+                      </TableCell>
+                      <TableCell className="max-w-[200px] truncate">
+                        {d.next_action || "—"}
+                      </TableCell>
+                      <TableCell>{d.next_followup || "—"}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       ) : (
-        <div className="flex gap-3 overflow-x-auto pb-4">
+        <div className="-mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-4 sm:mx-0 sm:px-0">
           {DEAL_STAGES.map((stage) => {
             const column = localDeals.filter(
               (d) => normalizeDealStage(d.stage) === stage
@@ -165,7 +224,7 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
               <div
                 key={stage}
                 data-stage={stage}
-                className="flex w-64 shrink-0 flex-col rounded-lg border bg-muted/30 transition-colors data-[drag-over=true]:border-brand data-[drag-over=true]:bg-brand/5"
+                className="flex w-[min(85vw,18rem)] shrink-0 snap-center flex-col rounded-lg border bg-muted/30 transition-colors data-[drag-over=true]:border-brand data-[drag-over=true]:bg-brand/5 sm:w-64"
                 onDragOver={(e) => {
                   e.preventDefault();
                   e.dataTransfer.dropEffect = "move";
@@ -176,7 +235,6 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
                 }}
                 onDragLeave={(e) => {
                   const el = e.currentTarget;
-                  // Ignore leave events when moving over children
                   if (el.contains(e.relatedTarget as Node)) return;
                   el.dataset.dragOver = "false";
                 }}
@@ -191,7 +249,7 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
                   if (id) moveDeal(id, stage);
                 }}
               >
-                <div className="border-b border-border px-3 py-2.5">
+                <div className="sticky top-0 z-10 border-b border-border bg-muted/80 px-3 py-2.5 backdrop-blur-sm">
                   <p className="text-sm font-semibold tracking-tight text-foreground">
                     {stage}
                   </p>
@@ -209,7 +267,6 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
                         e.dataTransfer.setData("text/plain", d.id);
                         e.dataTransfer.setData("text/deal-id", d.id);
                         e.dataTransfer.effectAllowed = "move";
-                        // Visual only — no React setState (that cancels the drag)
                         e.currentTarget.style.opacity = "0.4";
                       }}
                       onDragEnd={(e) => {
@@ -245,6 +302,22 @@ export function DealsViews({ deals }: { deals: Deal[] }) {
                           </span>
                         ) : null}
                       </div>
+                      {/* Touch-friendly stage change (DnD is weak on mobile) */}
+                      <NativeSelect
+                        className="mt-2 h-10 w-full text-sm md:hidden"
+                        value={normalizeDealStage(d.stage)}
+                        onChange={(e) =>
+                          moveDeal(d.id, e.target.value as DealStage)
+                        }
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {DEAL_STAGES.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </NativeSelect>
                     </div>
                   ))}
                 </div>

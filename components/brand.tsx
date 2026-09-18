@@ -34,10 +34,10 @@ export function BrandWordmark({
     <div className={cn("flex items-center gap-3", className)}>
       <BrandMark size={48} />
       <div className="min-w-0 leading-snug">
-        <p className="text-base font-bold text-foreground">
+        <p className="truncate text-sm font-bold text-foreground sm:text-base">
           The Cartel Insider
         </p>
-        <p className="truncate text-sm font-medium text-muted-foreground">
+        <p className="truncate text-xs font-medium text-muted-foreground sm:text-sm">
           {subtitle}
         </p>
       </div>
