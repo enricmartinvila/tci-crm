@@ -15,6 +15,7 @@ export type DealStage =
 
 export type ActivityType =
   | "email_sent"
+  | "email"
   | "linkedin_message"
   | "instagram_dm"
   | "form_submitted"

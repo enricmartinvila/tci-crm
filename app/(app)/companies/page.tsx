@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Company } from "@/lib/types";
+import { getActiveWorkspaceId } from "@/lib/workspace";
 import { CreateCompanyDialog } from "@/components/companies/create-company-dialog";
 import { CompaniesFilters } from "@/components/companies/companies-filters";
 import { CompaniesTable } from "@/components/companies/companies-table";
@@ -19,8 +20,12 @@ export default async function CompaniesPage({
 }) {
   const params = await searchParams;
   const supabase = await createClient();
+  const workspaceId = await getActiveWorkspaceId();
 
-  let query = supabase.from("companies").select("*");
+  let query = supabase
+    .from("companies")
+    .select("*")
+    .eq("workspace_id", workspaceId);
 
   if (params.q) {
     query = query.or(

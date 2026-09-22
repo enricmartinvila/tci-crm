@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Papa from "papaparse";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { getActiveWorkspaceId } from "@/lib/workspace";
 import {
   COMPANY_CSV_DEFAULTS,
   CONTACT_CSV_DEFAULTS,
@@ -141,6 +142,8 @@ export default function ImportPage() {
       return;
     }
 
+    const workspaceId = await getActiveWorkspaceId();
+
     try {
       if (entity === "companies") {
         const payloads = rows.flatMap((row) => {
@@ -149,6 +152,7 @@ export default function ImportPage() {
           return [
             {
               user_id: user.id,
+              workspace_id: workspaceId,
               name,
               website: getMapped(row, "website")?.trim() || null,
               category: getMapped(row, "category")?.trim() || null,
@@ -189,7 +193,7 @@ export default function ImportPage() {
           const chunk = payloads.slice(i, i + 50);
           const { error, count } = await supabase
             .from("companies")
-            .upsert(chunk, { onConflict: "user_id,name", count: "exact" });
+            .upsert(chunk, { onConflict: "workspace_id,name", count: "exact" });
           if (error) {
             errors += chunk.length;
             console.error(error);
@@ -203,8 +207,12 @@ export default function ImportPage() {
           await Promise.all([
             supabase
               .from("companies")
-              .select("id, name, status, priority, next_action, next_followup"),
-            supabase.from("deals").select("company_id"),
+              .select("id, name, status, priority, next_action, next_followup")
+              .eq("workspace_id", workspaceId),
+            supabase
+              .from("deals")
+              .select("company_id")
+              .eq("workspace_id", workspaceId),
           ]);
         const withDeal = new Set(
           (existingDeals || []).map((d) => d.company_id).filter(Boolean)
@@ -213,6 +221,7 @@ export default function ImportPage() {
         if (missing.length > 0) {
           const dealPayloads = missing.map((c) => ({
             user_id: user.id,
+            workspace_id: workspaceId,
             company_id: c.id,
             name: c.name,
             stage: c.status || "Researching",
@@ -247,7 +256,8 @@ export default function ImportPage() {
       if (entity === "contacts") {
         const { data: companies, error: cErr } = await supabase
           .from("companies")
-          .select("id, name");
+          .select("id, name")
+          .eq("workspace_id", workspaceId);
         if (cErr) throw cErr;
         const byName = new Map(
           (companies || []).map((c) => [c.name.trim().toLowerCase(), c.id])
@@ -273,6 +283,7 @@ export default function ImportPage() {
           }
           payloads.push({
             user_id: user.id,
+            workspace_id: workspaceId,
             company_id,
             name,
             contact_rank: parseNum(getMapped(row, "contact_rank")),
@@ -324,7 +335,8 @@ export default function ImportPage() {
       if (entity === "deals") {
         const { data: companies, error: cErr } = await supabase
           .from("companies")
-          .select("id, name");
+          .select("id, name")
+          .eq("workspace_id", workspaceId);
         if (cErr) throw cErr;
         const byName = new Map(
           (companies || []).map((c) => [c.name.trim().toLowerCase(), c.id])
@@ -343,6 +355,7 @@ export default function ImportPage() {
           }
           payloads.push({
             user_id: user.id,
+            workspace_id: workspaceId,
             company_id,
             name,
             stage: mapStage(getMapped(row, "stage")),

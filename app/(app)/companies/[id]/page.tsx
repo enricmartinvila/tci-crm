@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveWorkspaceId } from "@/lib/workspace";
 import type { Activity, Company, Contact, Deal } from "@/lib/types";
 import { PriorityBadge, StageBadge, StatusBadge } from "@/components/badges";
 import { AddActivityDialog } from "@/components/add-activity-dialog";
@@ -28,6 +29,7 @@ export default async function CompanyDetailPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+  const workspaceId = await getActiveWorkspaceId();
 
   const [
     { data: company },
@@ -35,20 +37,28 @@ export default async function CompanyDetailPage({
     { data: deals },
     { data: activities },
   ] = await Promise.all([
-    supabase.from("companies").select("*").eq("id", id).maybeSingle(),
+    supabase
+      .from("companies")
+      .select("*")
+      .eq("workspace_id", workspaceId)
+      .eq("id", id)
+      .maybeSingle(),
     supabase
       .from("contacts")
       .select("*")
+      .eq("workspace_id", workspaceId)
       .eq("company_id", id)
       .order("contact_rank", { ascending: true, nullsFirst: false }),
     supabase
       .from("deals")
       .select("*")
+      .eq("workspace_id", workspaceId)
       .eq("company_id", id)
       .order("created_at", { ascending: false }),
     supabase
       .from("activities")
       .select("*, contacts(id, name)")
+      .eq("workspace_id", workspaceId)
       .eq("company_id", id)
       .order("happened_at", { ascending: false }),
   ]);

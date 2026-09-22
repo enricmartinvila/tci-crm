@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Settings,
   Upload,
   Users,
 } from "lucide-react";
@@ -28,6 +29,7 @@ const nav = [
   { href: "/deals", label: "Deals", icon: Handshake },
   { href: "/follow-ups", label: "Follow-ups", icon: CalendarClock },
   { href: "/import", label: "Import", icon: Upload },
+  { href: "/settings/workspaces", label: "Settings", icon: Settings },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {

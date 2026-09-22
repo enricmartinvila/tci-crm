@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Deal } from "@/lib/types";
+import { getActiveWorkspaceId } from "@/lib/workspace";
 import { DealsViews } from "@/components/deals/deals-views";
 import { DealsFilters } from "@/components/deals/deals-filters";
 import { BackfillDealsButton } from "@/components/deals/backfill-deals-button";
@@ -19,8 +20,12 @@ export default async function DealsPage({
 }) {
   const params = await searchParams;
   const supabase = await createClient();
+  const workspaceId = await getActiveWorkspaceId();
 
-  let query = supabase.from("deals").select("*, companies(id, name)");
+  let query = supabase
+    .from("deals")
+    .select("*, companies(id, name)")
+    .eq("workspace_id", workspaceId);
 
   if (params.priority) query = query.eq("priority", params.priority);
   if (params.stage) query = query.eq("stage", params.stage);
@@ -43,8 +48,11 @@ export default async function DealsPage({
   const [{ data, error }, { data: allCompanies }, { data: dealCompanyIds }] =
     await Promise.all([
       query,
-      supabase.from("companies").select("id"),
-      supabase.from("deals").select("company_id"),
+      supabase.from("companies").select("id").eq("workspace_id", workspaceId),
+      supabase
+        .from("deals")
+        .select("company_id")
+        .eq("workspace_id", workspaceId),
     ]);
 
   let deals = (data || []) as Deal[];

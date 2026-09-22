@@ -6,6 +6,7 @@ import {
   normalizeDealStage,
 } from "@/lib/constants";
 import type { DealStage } from "@/lib/types";
+import { getActiveWorkspaceId } from "@/lib/workspace";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PriorityBadge, StageBadge } from "@/components/badges";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ function daysOverdue(date: string, today: string) {
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const workspaceId = await getActiveWorkspaceId();
   const today = todayISO();
 
   const [
@@ -36,26 +38,36 @@ export default async function DashboardPage() {
     { data: dealFollowups },
     { data: recentActivities },
   ] = await Promise.all([
-    supabase.from("companies").select("id", { count: "exact", head: true }),
-    supabase.from("deals").select("id, stage, value, currency"),
     supabase
       .from("companies")
       .select("id", { count: "exact", head: true })
+      .eq("workspace_id", workspaceId),
+    supabase
+      .from("deals")
+      .select("id, stage, value, currency")
+      .eq("workspace_id", workspaceId),
+    supabase
+      .from("companies")
+      .select("id", { count: "exact", head: true })
+      .eq("workspace_id", workspaceId)
       .lte("next_followup", today)
       .not("next_followup", "is", null),
     supabase
       .from("contacts")
       .select("id", { count: "exact", head: true })
+      .eq("workspace_id", workspaceId)
       .lte("next_followup", today)
       .not("next_followup", "is", null),
     supabase
       .from("deals")
       .select("id", { count: "exact", head: true })
+      .eq("workspace_id", workspaceId)
       .lte("next_followup", today)
       .not("next_followup", "is", null),
     supabase
       .from("companies")
       .select("id, name, next_followup, priority, status")
+      .eq("workspace_id", workspaceId)
       .lte("next_followup", today)
       .not("next_followup", "is", null)
       .order("next_followup", { ascending: true })
@@ -63,6 +75,7 @@ export default async function DashboardPage() {
     supabase
       .from("contacts")
       .select("id, name, next_followup, company_id, companies(id, name)")
+      .eq("workspace_id", workspaceId)
       .lte("next_followup", today)
       .not("next_followup", "is", null)
       .order("next_followup", { ascending: true })
@@ -70,6 +83,7 @@ export default async function DashboardPage() {
     supabase
       .from("deals")
       .select("id, name, next_followup, company_id, companies(id, name)")
+      .eq("workspace_id", workspaceId)
       .lte("next_followup", today)
       .not("next_followup", "is", null)
       .order("next_followup", { ascending: true })
@@ -79,6 +93,7 @@ export default async function DashboardPage() {
       .select(
         "id, type, comment, happened_at, company_id, companies(id, name)"
       )
+      .eq("workspace_id", workspaceId)
       .order("happened_at", { ascending: false })
       .limit(6),
   ]);

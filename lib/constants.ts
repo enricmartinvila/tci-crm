@@ -27,6 +27,7 @@ export const ACTIVITY_TYPES: { value: ActivityType; label: string }[] = [
   { value: "note", label: "Nota" },
   { value: "meeting", label: "Reunión" },
   { value: "call", label: "Call" },
+  { value: "email", label: "Email" },
   { value: "email_sent", label: "Email sent" },
   { value: "linkedin_message", label: "LinkedIn message" },
   { value: "instagram_dm", label: "Instagram DM" },

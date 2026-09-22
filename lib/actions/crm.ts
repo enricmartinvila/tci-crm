@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { statusToDealStage } from "@/lib/constants";
+import { getActiveWorkspaceId } from "@/lib/workspace";
+import { extractDomain } from "@/lib/api/domain";
 import type { ActivityType, DealStage, PriorityLevel } from "@/lib/types";
 
 async function requireUser() {
@@ -46,12 +48,14 @@ type CompanyDealSeed = {
 
 function defaultDealPayload(
   userId: string,
+  workspaceId: string,
   company: CompanyDealSeed
 ) {
   const stage =
     (statusToDealStage(company.status) as DealStage | null) || "Researching";
   return {
     user_id: userId,
+    workspace_id: workspaceId,
     company_id: company.id,
     name: company.name,
     stage,
@@ -65,9 +69,12 @@ function defaultDealPayload(
 async function insertDefaultDeal(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
+  workspaceId: string,
   company: CompanyDealSeed
 ) {
-  return supabase.from("deals").insert(defaultDealPayload(userId, company));
+  return supabase
+    .from("deals")
+    .insert(defaultDealPayload(userId, workspaceId, company));
 }
 
 function emptyToNull(v: FormDataEntryValue | null | undefined) {
@@ -99,10 +106,14 @@ export async function loginAction(formData: FormData) {
 
 export async function createCompany(formData: FormData) {
   const { supabase, user } = await requireUser();
+  const workspaceId = await getActiveWorkspaceId();
+  const website = emptyToNull(formData.get("website"));
   const payload = {
     user_id: user.id,
+    workspace_id: workspaceId,
     name: String(formData.get("name") || "").trim(),
-    website: emptyToNull(formData.get("website")),
+    website,
+    domain: extractDomain(website),
     category: emptyToNull(formData.get("category")),
     priority: emptyToNull(formData.get("priority")) as PriorityLevel | null,
     status: emptyToNull(formData.get("status")) || "Researching",
@@ -126,6 +137,7 @@ export async function createCompany(formData: FormData) {
     const { error: dealError } = await insertDefaultDeal(
       supabase,
       user.id,
+      workspaceId,
       company
     );
     if (dealError) return { error: dealError.message };
@@ -223,9 +235,11 @@ export async function deleteCompany(id: string) {
 
 export async function createContact(formData: FormData) {
   const { supabase, user } = await requireUser();
+  const workspaceId = await getActiveWorkspaceId();
   const company_id = String(formData.get("company_id") || "");
   const payload = {
     user_id: user.id,
+    workspace_id: workspaceId,
     company_id,
     name: String(formData.get("name") || "").trim(),
     contact_rank: toInt(formData.get("contact_rank")),
@@ -299,9 +313,11 @@ export async function deleteContact(id: string, companyId: string) {
 
 export async function createDeal(formData: FormData) {
   const { supabase, user } = await requireUser();
+  const workspaceId = await getActiveWorkspaceId();
   const company_id = String(formData.get("company_id") || "");
   const payload = {
     user_id: user.id,
+    workspace_id: workspaceId,
     company_id,
     name: String(formData.get("name") || "").trim(),
     stage: (emptyToNull(formData.get("stage")) ||
@@ -330,13 +346,18 @@ export async function createDeal(formData: FormData) {
 /** Create one default deal for every company that has none. */
 export async function backfillMissingDeals() {
   const { supabase, user } = await requireUser();
+  const workspaceId = await getActiveWorkspaceId();
 
   const [{ data: companies, error: cErr }, { data: deals, error: dErr }] =
     await Promise.all([
       supabase
         .from("companies")
-        .select("id, name, status, priority, next_action, next_followup"),
-      supabase.from("deals").select("company_id"),
+        .select("id, name, status, priority, next_action, next_followup")
+        .eq("workspace_id", workspaceId),
+      supabase
+        .from("deals")
+        .select("company_id")
+        .eq("workspace_id", workspaceId),
     ]);
 
   if (cErr) return { error: cErr.message, created: 0 };
@@ -351,7 +372,9 @@ export async function backfillMissingDeals() {
     return { error: null, created: 0 };
   }
 
-  const payloads = missing.map((c) => defaultDealPayload(user.id, c));
+  const payloads = missing.map((c) =>
+    defaultDealPayload(user.id, workspaceId, c)
+  );
   let created = 0;
   for (let i = 0; i < payloads.length; i += 50) {
     const chunk = payloads.slice(i, i + 50);
@@ -432,6 +455,7 @@ export async function deleteDeal(id: string, companyId: string) {
 
 export async function createActivity(formData: FormData) {
   const { supabase, user } = await requireUser();
+  const workspaceId = await getActiveWorkspaceId();
   const company_id = String(formData.get("company_id") || "");
   const contact_id = emptyToNull(formData.get("contact_id"));
   const deal_id = emptyToNull(formData.get("deal_id"));
@@ -440,6 +464,7 @@ export async function createActivity(formData: FormData) {
   const next_followup = emptyToNull(formData.get("next_followup"));
   const payload = {
     user_id: user.id,
+    workspace_id: workspaceId,
     company_id,
     contact_id,
     deal_id,

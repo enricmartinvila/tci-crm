@@ -29,7 +29,14 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isLogin = request.nextUrl.pathname.startsWith("/login");
+  const pathname = request.nextUrl.pathname;
+  const isLogin = pathname.startsWith("/login");
+  const isApi = pathname.startsWith("/api/");
+
+  // External API uses Bearer keys; do not require browser session.
+  if (isApi) {
+    return supabaseResponse;
+  }
 
   if (!user && !isLogin) {
     const url = request.nextUrl.clone();

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveWorkspaceId } from "@/lib/workspace";
 import { PriorityBadge } from "@/components/badges";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -28,6 +29,7 @@ type FollowupRow = {
 
 export default async function FollowUpsPage() {
   const supabase = await createClient();
+  const workspaceId = await getActiveWorkspaceId();
   const today = todayISO();
 
   const [
@@ -38,16 +40,21 @@ export default async function FollowUpsPage() {
     supabase
       .from("companies")
       .select("id, name, next_followup, priority")
+      .eq("workspace_id", workspaceId)
       .not("next_followup", "is", null)
       .order("next_followup", { ascending: true }),
     supabase
       .from("contacts")
       .select("id, name, next_followup, company_id, companies(id, name)")
+      .eq("workspace_id", workspaceId)
       .not("next_followup", "is", null)
       .order("next_followup", { ascending: true }),
     supabase
       .from("deals")
-      .select("id, name, next_followup, priority, company_id, companies(id, name)")
+      .select(
+        "id, name, next_followup, priority, company_id, companies(id, name)"
+      )
+      .eq("workspace_id", workspaceId)
       .not("next_followup", "is", null)
       .order("next_followup", { ascending: true }),
   ]);
@@ -158,7 +165,9 @@ function FollowupTable({
               <p className="min-w-0 font-medium text-foreground">{r.title}</p>
               <span
                 className={`shrink-0 text-sm ${
-                  r.overdue ? "font-medium text-destructive" : "text-muted-foreground"
+                  r.overdue
+                    ? "font-medium text-destructive"
+                    : "text-muted-foreground"
                 }`}
               >
                 {r.date}

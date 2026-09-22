@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact } from "@/lib/types";
+import { getActiveWorkspaceId } from "@/lib/workspace";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -26,10 +27,12 @@ export default async function ContactsPage({
 }) {
   const params = await searchParams;
   const supabase = await createClient();
+  const workspaceId = await getActiveWorkspaceId();
 
   let query = supabase
     .from("contacts")
     .select("*, companies(id, name)")
+    .eq("workspace_id", workspaceId)
     .order("contact_rank", { ascending: true, nullsFirst: false });
 
   if (params.q) {
