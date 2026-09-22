@@ -202,7 +202,7 @@ export async function GET() {
     process.env.NEXT_PUBLIC_APP_URL || "https://tci-crm.vercel.app";
 
   const spec = {
-    openapi: "3.0.3",
+    openapi: "3.1.0",
     info: {
       title: "TCI CRM API",
       version: "1.0.0",
