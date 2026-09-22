@@ -1,28 +1,221 @@
 import { API_SCOPES } from "@/lib/api/scopes";
 
-const servers = [
-  {
-    url: process.env.NEXT_PUBLIC_APP_URL || "https://YOUR_DOMAIN",
-    description: "Production",
+const nullableString = { type: "string", nullable: true };
+const nullableNumber = { type: "number", nullable: true };
+const nullableInteger = { type: "integer", nullable: true };
+
+const CompanyCreate = {
+  type: "object",
+  required: ["name"],
+  properties: {
+    name: { type: "string", description: "Company name" },
+    website: nullableString,
+    domain: nullableString,
+    category: nullableString,
+    priority: {
+      type: "string",
+      enum: ["A+", "A", "B", "C"],
+      nullable: true,
+    },
+    status: nullableString,
+    next_action: nullableString,
+    next_followup: { type: "string", nullable: true, description: "ISO date" },
+    last_contact: { type: "string", nullable: true, description: "ISO date" },
+    notes: nullableString,
+    youtube_fit: { type: "integer", minimum: 1, maximum: 5, nullable: true },
+    instagram_fit: { type: "integer", minimum: 1, maximum: 5, nullable: true },
+    score: nullableNumber,
+    custom_data: { type: "object", additionalProperties: true },
+    force: {
+      type: "boolean",
+      description: "Create even if possible duplicates exist",
+    },
   },
-];
+};
+
+const CompanyPatch = {
+  type: "object",
+  properties: {
+    name: { type: "string" },
+    website: nullableString,
+    domain: nullableString,
+    category: nullableString,
+    priority: {
+      type: "string",
+      enum: ["A+", "A", "B", "C"],
+      nullable: true,
+    },
+    status: nullableString,
+    next_action: nullableString,
+    next_followup: nullableString,
+    last_contact: nullableString,
+    notes: nullableString,
+    youtube_fit: nullableInteger,
+    instagram_fit: nullableInteger,
+    score: nullableNumber,
+    custom_data: { type: "object", additionalProperties: true },
+  },
+};
+
+const ContactCreate = {
+  type: "object",
+  required: ["company_id", "name"],
+  properties: {
+    company_id: { type: "string", format: "uuid" },
+    name: { type: "string" },
+    email: nullableString,
+    job_title: nullableString,
+    contact_type: nullableString,
+    linkedin_url: nullableString,
+    outreach_status: nullableString,
+    next_followup: nullableString,
+    notes: nullableString,
+    custom_data: { type: "object", additionalProperties: true },
+    force: { type: "boolean" },
+  },
+};
+
+const ContactPatch = {
+  type: "object",
+  properties: {
+    company_id: { type: "string", format: "uuid" },
+    name: { type: "string" },
+    email: nullableString,
+    job_title: nullableString,
+    contact_type: nullableString,
+    linkedin_url: nullableString,
+    outreach_status: nullableString,
+    next_followup: nullableString,
+    notes: nullableString,
+    custom_data: { type: "object", additionalProperties: true },
+  },
+};
+
+const DealCreate = {
+  type: "object",
+  required: ["company_id", "name"],
+  properties: {
+    company_id: { type: "string", format: "uuid" },
+    name: { type: "string" },
+    stage: { type: "string" },
+    priority: {
+      type: "string",
+      enum: ["A+", "A", "B", "C"],
+      nullable: true,
+    },
+    value: nullableNumber,
+    currency: { type: "string" },
+    next_action: nullableString,
+    next_followup: nullableString,
+    notes: nullableString,
+    custom_data: { type: "object", additionalProperties: true },
+  },
+};
+
+const DealPatch = {
+  type: "object",
+  properties: {
+    company_id: { type: "string", format: "uuid" },
+    name: { type: "string" },
+    stage: { type: "string" },
+    priority: {
+      type: "string",
+      enum: ["A+", "A", "B", "C"],
+      nullable: true,
+    },
+    value: nullableNumber,
+    currency: { type: "string" },
+    next_action: nullableString,
+    next_followup: nullableString,
+    notes: nullableString,
+    custom_data: { type: "object", additionalProperties: true },
+  },
+};
+
+const ActivityCreate = {
+  type: "object",
+  required: ["company_id", "type"],
+  properties: {
+    company_id: { type: "string", format: "uuid" },
+    contact_id: { type: "string", format: "uuid", nullable: true },
+    deal_id: { type: "string", format: "uuid", nullable: true },
+    type: {
+      type: "string",
+      description: "note | meeting | call | email | email_sent | …",
+    },
+    comment: nullableString,
+    subject: nullableString,
+    summary: nullableString,
+    direction: {
+      type: "string",
+      enum: ["inbound", "outbound"],
+      nullable: true,
+    },
+    external_thread_id: nullableString,
+    external_message_id: nullableString,
+    happened_at: nullableString,
+    occurred_at: nullableString,
+    next_followup: nullableString,
+  },
+};
+
+const FollowupCreate = {
+  type: "object",
+  required: ["entity_type", "entity_id", "next_followup"],
+  properties: {
+    entity_type: { type: "string", enum: ["company", "contact", "deal"] },
+    entity_id: { type: "string", format: "uuid" },
+    next_followup: { type: "string", description: "ISO date" },
+    next_action: nullableString,
+  },
+};
+
+const FollowupPatch = {
+  type: "object",
+  properties: {
+    next_followup: nullableString,
+    next_action: nullableString,
+    last_contact: nullableString,
+  },
+};
+
+function jsonBody(schema: object) {
+  return {
+    required: true,
+    content: {
+      "application/json": { schema },
+    },
+  };
+}
+
+function pathId() {
+  return {
+    name: "id",
+    in: "path",
+    required: true,
+    schema: { type: "string", format: "uuid" },
+  };
+}
 
 export async function GET() {
+  const base =
+    process.env.NEXT_PUBLIC_APP_URL || "https://tci-crm.vercel.app";
+
   const spec = {
-    openapi: "3.1.0",
+    openapi: "3.0.3",
     info: {
       title: "TCI CRM API",
       version: "1.0.0",
       description:
-        "Neutral multi-workspace CRM API for ChatGPT, Claude, n8n, Zapier, and scripts. Authenticate with a workspace API key. No delete endpoints.",
+        "Multi-workspace CRM API for ChatGPT Custom GPTs. Use Bearer workspace API key (tci_...). No delete endpoints.",
     },
-    servers,
+    servers: [{ url: base.replace(/\/$/, "") }],
     components: {
       securitySchemes: {
         bearerAuth: {
           type: "http",
           scheme: "bearer",
-          description: "Workspace API key (tci_...)",
+          description: "Workspace API key starting with tci_",
         },
       },
       schemas: {
@@ -31,13 +224,18 @@ export async function GET() {
           properties: {
             error: { type: "string" },
             code: { type: "string" },
-            details: {},
+            details: { type: "object", additionalProperties: true },
           },
         },
-        Company: { type: "object", additionalProperties: true },
-        Contact: { type: "object", additionalProperties: true },
-        Deal: { type: "object", additionalProperties: true },
-        Activity: { type: "object", additionalProperties: true },
+        CompanyCreate,
+        CompanyPatch,
+        ContactCreate,
+        ContactPatch,
+        DealCreate,
+        DealPatch,
+        ActivityCreate,
+        FollowupCreate,
+        FollowupPatch,
       },
     },
     security: [{ bearerAuth: [] }],
@@ -56,15 +254,10 @@ export async function GET() {
         },
         post: {
           operationId: "createCompany",
-          summary: "Create company (dedupe unless force=true)",
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/Company" },
-              },
-            },
-          },
+          summary: "Create company (409 if duplicates unless force=true)",
+          requestBody: jsonBody({
+            $ref: "#/components/schemas/CompanyCreate",
+          }),
           responses: {
             "201": { description: "Created" },
             "409": { description: "Possible duplicates" },
@@ -74,7 +267,7 @@ export async function GET() {
       "/api/v1/companies/search": {
         get: {
           operationId: "searchCompanies",
-          summary: "Search companies",
+          summary: "Search companies by name/domain/website",
           parameters: [
             {
               name: "q",
@@ -89,36 +282,17 @@ export async function GET() {
       "/api/v1/companies/{id}": {
         get: {
           operationId: "getCompany",
-          summary: "Get company",
-          parameters: [
-            {
-              name: "id",
-              in: "path",
-              required: true,
-              schema: { type: "string", format: "uuid" },
-            },
-          ],
+          summary: "Get company by id",
+          parameters: [pathId()],
           responses: { "200": { description: "OK" } },
         },
         patch: {
           operationId: "updateCompany",
           summary: "Update company",
-          parameters: [
-            {
-              name: "id",
-              in: "path",
-              required: true,
-              schema: { type: "string", format: "uuid" },
-            },
-          ],
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/Company" },
-              },
-            },
-          },
+          parameters: [pathId()],
+          requestBody: jsonBody({
+            $ref: "#/components/schemas/CompanyPatch",
+          }),
           responses: { "200": { description: "OK" } },
         },
       },
@@ -126,11 +300,19 @@ export async function GET() {
         get: {
           operationId: "listContacts",
           summary: "List contacts",
+          parameters: [
+            { name: "company_id", in: "query", schema: { type: "string" } },
+            { name: "q", in: "query", schema: { type: "string" } },
+            { name: "limit", in: "query", schema: { type: "integer" } },
+          ],
           responses: { "200": { description: "OK" } },
         },
         post: {
           operationId: "createContact",
           summary: "Create contact",
+          requestBody: jsonBody({
+            $ref: "#/components/schemas/ContactCreate",
+          }),
           responses: { "201": { description: "Created" } },
         },
       },
@@ -138,27 +320,16 @@ export async function GET() {
         get: {
           operationId: "getContact",
           summary: "Get contact",
-          parameters: [
-            {
-              name: "id",
-              in: "path",
-              required: true,
-              schema: { type: "string", format: "uuid" },
-            },
-          ],
+          parameters: [pathId()],
           responses: { "200": { description: "OK" } },
         },
         patch: {
           operationId: "updateContact",
           summary: "Update contact",
-          parameters: [
-            {
-              name: "id",
-              in: "path",
-              required: true,
-              schema: { type: "string", format: "uuid" },
-            },
-          ],
+          parameters: [pathId()],
+          requestBody: jsonBody({
+            $ref: "#/components/schemas/ContactPatch",
+          }),
           responses: { "200": { description: "OK" } },
         },
       },
@@ -166,11 +337,19 @@ export async function GET() {
         get: {
           operationId: "listDeals",
           summary: "List deals",
+          parameters: [
+            { name: "company_id", in: "query", schema: { type: "string" } },
+            { name: "stage", in: "query", schema: { type: "string" } },
+            { name: "limit", in: "query", schema: { type: "integer" } },
+          ],
           responses: { "200": { description: "OK" } },
         },
         post: {
           operationId: "createDeal",
           summary: "Create deal",
+          requestBody: jsonBody({
+            $ref: "#/components/schemas/DealCreate",
+          }),
           responses: { "201": { description: "Created" } },
         },
       },
@@ -178,27 +357,16 @@ export async function GET() {
         get: {
           operationId: "getDeal",
           summary: "Get deal",
-          parameters: [
-            {
-              name: "id",
-              in: "path",
-              required: true,
-              schema: { type: "string", format: "uuid" },
-            },
-          ],
+          parameters: [pathId()],
           responses: { "200": { description: "OK" } },
         },
         patch: {
           operationId: "updateDeal",
           summary: "Update deal",
-          parameters: [
-            {
-              name: "id",
-              in: "path",
-              required: true,
-              schema: { type: "string", format: "uuid" },
-            },
-          ],
+          parameters: [pathId()],
+          requestBody: jsonBody({
+            $ref: "#/components/schemas/DealPatch",
+          }),
           responses: { "200": { description: "OK" } },
         },
       },
@@ -206,11 +374,18 @@ export async function GET() {
         get: {
           operationId: "listActivities",
           summary: "List activities",
+          parameters: [
+            { name: "company_id", in: "query", schema: { type: "string" } },
+            { name: "limit", in: "query", schema: { type: "integer" } },
+          ],
           responses: { "200": { description: "OK" } },
         },
         post: {
           operationId: "createActivity",
-          summary: "Create activity (supports Gmail email payloads)",
+          summary: "Create activity (supports email payloads)",
+          requestBody: jsonBody({
+            $ref: "#/components/schemas/ActivityCreate",
+          }),
           responses: { "201": { description: "Created" } },
         },
       },
@@ -223,6 +398,9 @@ export async function GET() {
         post: {
           operationId: "createFollowup",
           summary: "Set next_followup on an entity",
+          requestBody: jsonBody({
+            $ref: "#/components/schemas/FollowupCreate",
+          }),
           responses: { "201": { description: "Created" } },
         },
       },
@@ -235,7 +413,10 @@ export async function GET() {
               name: "entity_type",
               in: "path",
               required: true,
-              schema: { type: "string", enum: ["company", "contact", "deal"] },
+              schema: {
+                type: "string",
+                enum: ["company", "contact", "deal"],
+              },
             },
             {
               name: "entity_id",
@@ -244,6 +425,9 @@ export async function GET() {
               schema: { type: "string", format: "uuid" },
             },
           ],
+          requestBody: jsonBody({
+            $ref: "#/components/schemas/FollowupPatch",
+          }),
           responses: { "200": { description: "OK" } },
         },
       },
@@ -272,7 +456,7 @@ export async function GET() {
       "/api/v1/context": {
         get: {
           operationId: "getContext",
-          summary: "Workspace context for assistants (rules, fields, stages)",
+          summary: "Workspace context (rules, fields, stages)",
           responses: { "200": { description: "OK" } },
         },
       },
