@@ -32,9 +32,10 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isLogin = pathname.startsWith("/login");
   const isApi = pathname.startsWith("/api/");
+  const isWellKnown = pathname.startsWith("/.well-known/");
 
-  // External API uses Bearer keys; do not require browser session.
-  if (isApi) {
+  // External API / MCP use Bearer keys; do not require browser session.
+  if (isApi || isWellKnown) {
     return supabaseResponse;
   }
 

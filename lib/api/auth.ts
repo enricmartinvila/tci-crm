@@ -50,22 +50,17 @@ function checkRateLimit(apiKeyId: string) {
   }
 }
 
-export async function authenticateRequest(
-  request: Request,
+export async function authenticateApiKey(
+  raw: string,
   requiredScopes: ApiScope[] = []
 ): Promise<ApiAuthContext> {
-  const header = request.headers.get("authorization") || "";
-  const match = header.match(/^Bearer\s+(.+)$/i);
-  if (!match) {
-    throw new ApiError(401, "unauthorized", "Missing Bearer API key");
-  }
-  const raw = match[1].trim();
-  if (!raw) {
+  const keyRaw = raw.trim();
+  if (!keyRaw) {
     throw new ApiError(401, "unauthorized", "Missing Bearer API key");
   }
 
   const supabase = createServiceClient();
-  const keyHash = hashApiKey(raw);
+  const keyHash = hashApiKey(keyRaw);
   const { data: key, error } = await supabase
     .from("api_keys")
     .select("id, workspace_id, name, scopes, active")
@@ -101,4 +96,16 @@ export async function authenticateRequest(
     scopes: scopes.length ? scopes : ALL_SCOPES,
     keyName: key.name,
   };
+}
+
+export async function authenticateRequest(
+  request: Request,
+  requiredScopes: ApiScope[] = []
+): Promise<ApiAuthContext> {
+  const header = request.headers.get("authorization") || "";
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  if (!match) {
+    throw new ApiError(401, "unauthorized", "Missing Bearer API key");
+  }
+  return authenticateApiKey(match[1], requiredScopes);
 }
